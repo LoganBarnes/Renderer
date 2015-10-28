@@ -52,6 +52,13 @@ int main(int argc, const char **argv)
 		return 1;
 	}
 
+    if (!renderer->createWindow(640, 480, "Renderer"))
+    {
+        std::cerr << "GLFW window creation failed. Exiting program..." << std::endl;
+        return 1;
+    }
+
+
 	unsigned int num;
 	unsigned long result;
 
