@@ -1,0 +1,6 @@
+// the configured options and settings for Renderer
+#define Renderer_VERSION_MAJOR @Renderer_VERSION_MAJOR@
+#define Renderer_VERSION_MINOR @Renderer_VERSION_MINOR@
+
+// use cuda function if available
+#cmakedefine USE_CUDA
