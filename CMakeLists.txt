@@ -17,23 +17,26 @@ if(MSVC)
 	endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 	# Update if necessary
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused")
 endif()
 
 # should we use cuda functions?
 option(USE_CUDA "Use CUDA kernels if available" ON)
 
+# resource location
+set(RESOURCES_PATH "${PROJECT_SOURCE_DIR}/res/")
+
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
 	"${PROJECT_SOURCE_DIR}/src/RendererConfig.hpp.in"
-	"${PROJECT_BINARY_DIR}/RendererConfig.hpp"
+        "${PROJECT_BINARY_DIR}/src/RendererConfig.hpp"
 )
 
 # add the binary tree to the search path for include files
 # so that we will find RendererConfig.hpp
 include_directories (
-        "${PROJECT_BINARY_DIR}"
+        "${PROJECT_BINARY_DIR}/src"
         "${PROJECT_SOURCE_DIR}/src"
         "${PROJECT_SOURCE_DIR}/src/renderer"
         "${PROJECT_SOURCE_DIR}/src/glfw-3.1.2/include"
@@ -43,9 +46,17 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderer")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/glfw-3.1.2")
 
-# add_executable(UnitTestRNG ${SOURCE} ${HEADERS})
+add_subdirectory("${PROJECT_SOURCE_DIR}/res/shaders")
 
 
+# add glew functionality
+find_package(GLEW REQUIRED)
+if (GLEW_FOUND)
+    include_directories(${GLEW_INCLUDE_DIRS})
+    link_libraries(${GLEW_LIBRARIES})
+endif()
+
+# create the cuda library
 if (USE_CUDA)
 	include_directories ("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
 	add_subdirectory (src/CudaFunctions)
@@ -53,12 +64,18 @@ if (USE_CUDA)
 endif (USE_CUDA)
 
 # add the executable
-add_executable (Renderer ${SOURCE} ${HEADERS})
+# RES_FILES is ignored by cmake but they show up in the build tree
+add_executable (Renderer ${SOURCE} ${HEADERS} ${RES_FILES})
 target_link_libraries (Renderer glfw ${GLFW_LIBRARIES} ${EXTRA_LIBS})
+
+add_custom_command(TARGET Renderer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/res/shaders
+        $<TARGET_FILE_DIR:Renderer>/shaders)
 
 # add the install targets
 install (TARGETS Renderer DESTINATION bin)
-install (FILES "${PROJECT_BINARY_DIR}/RendererConfig.hpp"        
+install (FILES "${PROJECT_BINARY_DIR}/src/RendererConfig.hpp"
 	DESTINATION include)
 
 
