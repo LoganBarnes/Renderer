@@ -3,10 +3,9 @@
 
 #include "Application.hpp"
 
-//typedef void (* GLFWerrorfun)(int,const char*);
-//typedef struct GLFWwindow GLFWwindow;
-
 class GLHandler;
+class PathTracer;
+class Camera;
 
 class RenderApp : public Application
 {
@@ -24,7 +23,8 @@ public:
 
 private:
     GLHandler *m_glHandler;
-
+    PathTracer *m_pathTracer;
+    Camera *m_camera;
 };
 
 #endif // RENDER_APP_H

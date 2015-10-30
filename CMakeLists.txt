@@ -17,14 +17,21 @@ if(MSVC)
 	endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 	# Update if necessary
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused")
+        set(
+            CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}
+            -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy
+            -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations
+            -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual
+            -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel
+            -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused"
+        )
 endif()
 
 # should we use cuda functions?
 option(USE_CUDA "Use CUDA kernels if available" ON)
 
 # resource location
-set(RESOURCES_PATH "${PROJECT_SOURCE_DIR}/res/")
+set(RESOURCES_PATH "${PROJECT_SOURCE_DIR}/res")
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -38,30 +45,43 @@ configure_file (
 include_directories (
         "${PROJECT_BINARY_DIR}/src"
         "${PROJECT_SOURCE_DIR}/src"
-        "${PROJECT_SOURCE_DIR}/src/renderer"
+        "${PROJECT_SOURCE_DIR}/src/application"
+        "${PROJECT_SOURCE_DIR}/src/renderApp"
+        "${PROJECT_SOURCE_DIR}/src/renderApp/graphics"
         "${PROJECT_SOURCE_DIR}/src/glfw-3.1.2/include"
 )
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
-add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderer")
+add_subdirectory("${PROJECT_SOURCE_DIR}/src/application")
+add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp")
+add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp/graphics")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/glfw-3.1.2")
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/res/shaders")
+# resources
+add_subdirectory("${RESOURCES_PATH}/shaders")
 
+# add glm functionality
+find_package(GLM REQUIRED)
+if (GLM_FOUND)
+    message("-- Found GLM: ${GLM_INCLUDE_DIRS}")
+    include_directories("${GLM_INCLUDE_DIRS}")
+endif (GLM_FOUND)
 
 # add glew functionality
 find_package(GLEW REQUIRED)
 if (GLEW_FOUND)
     include_directories(${GLEW_INCLUDE_DIRS})
     link_libraries(${GLEW_LIBRARIES})
-endif()
+endif (GLEW_FOUND)
 
 # create the cuda library
 if (USE_CUDA)
-	include_directories ("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
+        include_directories ("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
 	add_subdirectory (src/CudaFunctions)
 	set (EXTRA_LIBS ${EXTRA_LIBS} CudaFunctions)
 endif (USE_CUDA)
+
+include_directories("${CUDA_INCLUDE_DIRS}")
 
 # add the executable
 # RES_FILES is ignored by cmake but they show up in the build tree

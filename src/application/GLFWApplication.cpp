@@ -66,6 +66,10 @@ int GLFWApplication::execute(int argc, const char **argv, const char *title)
     double currentTime = glfwGetTime();
     double accumulator = 0.0;
 
+    /* update app once before beginning loop*/
+    if (m_app)
+        m_app->update(deltaTime);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(m_window))
     {

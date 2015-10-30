@@ -1,7 +1,5 @@
-#include <iostream>
 #include <cuda_runtime.h>
-#include <thrust/device_ptr.h>
-#include <thrust/reduce.h>
+#include <cuda_gl_interop.h>
 #include "helper_cuda.h"
 
 typedef unsigned int uint;
@@ -9,7 +7,7 @@ typedef unsigned long ulong;
 
 extern "C"
 {
-    void cudaInit(int argc, const char **argv)
+    void cuda_init(int argc, const char **argv)
     {
         int devID;
 
@@ -22,7 +20,7 @@ extern "C"
             exit(EXIT_SUCCESS);
         }
     }
-    void cudaDestroy()
+    void cuda_destroy()
     {
         // cudaDeviceReset causes the driver to clean up all state. While
         // not mandatory in normal operation, it is good practice.  It is also
@@ -32,32 +30,69 @@ extern "C"
         cudaDeviceReset();
     }
 
-    void allocateArray(void **devPtr, size_t size)
+    void cuda_allocateArray(void **devPtr, size_t size)
     {
         checkCudaErrors(cudaMalloc(devPtr, size));
     }
 
-    void freeArray(void *devPtr)
+    void cuda_freeArray(void *devPtr)
     {
         checkCudaErrors(cudaFree(devPtr));
     }
 
-    void copyArrayToDevice(void *device, const void *host, int offset, int size)
+    void cuda_copyArrayToDevice(void *device, const void *host, int offset, int size)
     {
         checkCudaErrors(cudaMemcpy((char *) device + offset, host, size, cudaMemcpyHostToDevice));
     }
 
-    void copyArrayFromDevice(void *host, const void *device, int size)
+    void cuda_copyArrayFromDevice(void *host, const void *device, int size)
     {
         checkCudaErrors(cudaMemcpy(host, device, size, cudaMemcpyDeviceToHost));
     }
 
-    ulong sumNumbers(ulong *dNumbers, ulong n)
+    void cuda_registerGLTexture(cudaGraphicsResource_t* resource, GLuint tex, GLenum target, cudaGraphicsRegisterFlags flags)
     {
-        // simple reduction from 1 to n
-        thrust::device_ptr<ulong> dp_numbers(dNumbers);
-        return thrust::reduce(dp_numbers, dp_numbers + n);
-        // return 7;
+        checkCudaErrors(cudaGraphicsGLRegisterImage(resource, tex, target, flags));
+    }
+
+    void cuda_unregisterResource(cudaGraphicsResource_t resource)
+    {
+        checkCudaErrors(cudaGraphicsUnregisterResource(resource));
+    }
+
+    void cuda_graphicsMapResource(cudaGraphicsResource_t *res)
+    {
+        checkCudaErrors(cudaGraphicsMapResources(1, res));
+    }
+
+    void cuda_graphicsUnmapResource(cudaGraphicsResource_t *res)
+    {
+        checkCudaErrors(cudaGraphicsUnmapResources(1, res));
+    }
+
+    void cuda_graphicsSubResourceGetMappedArray(cudaArray_t *array, cudaGraphicsResource_t res, GLuint index, GLuint level)
+    {
+        checkCudaErrors(cudaGraphicsSubResourceGetMappedArray(array, res, index, level));
+    }
+
+    void cuda_createSurfaceObject(cudaSurfaceObject_t *surface, cudaResourceDesc *desc)
+    {
+        checkCudaErrors(cudaCreateSurfaceObject(surface, desc));
+    }
+
+    void cuda_destroySurfaceObject(cudaSurfaceObject_t surface)
+    {
+        checkCudaErrors(cudaDestroySurfaceObject(surface));
+    }
+
+    void cuda_streamSynchronize(cudaStream_t stream)
+    {
+        checkCudaErrors(cudaStreamSynchronize(stream));
+    }
+
+    void cuda_deviceSynchronize()
+    {
+        checkCudaErrors(cudaDeviceSynchronize());
     }
 
     //Round a / b to nearest higher integer value
