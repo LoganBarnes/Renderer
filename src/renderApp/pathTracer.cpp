@@ -6,19 +6,22 @@
 #include "CudaFunctions.cuh"
 #include "renderObjects.hpp"
 
-//#include <glm/gtx/string_cast.hpp>
-//#include <iostream>
-
 PathTracer::PathTracer()
+    : m_numShapes(0),
+      m_numLuminaires(0)
 {
     cuda_init(0, NULL);
-    cuda_allocateArray((void**)&m_dScaleViewInvEye, 16 * sizeof(float));
+
+    cuda_allocateArray((void**)&m_dScaleViewInvEye, 20 * sizeof(float));
+    cuda_allocateArray((void**)&m_dShapes, MAX_DEVICE_SHAPES * sizeof(Shape));
 }
 
 
 PathTracer::~PathTracer()
 {
     cuda_freeArray(m_dScaleViewInvEye);
+    cuda_freeArray(m_dShapes);
+
     cuda_destroy();
 }
 
@@ -36,11 +39,30 @@ void PathTracer::unregisterTexture(const char *name)
 }
 
 
+void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec4 color)
+{
+    Shape shape;
+    shape.type = type;
+    glm::mat4 inv = glm::inverse(trans);
+    set_float_mat4((float4 *)shape.inv, inv);
+    shape.mat.color = make_float4(color.x, color.y, color.z, color.w);
+
+    cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
+    ++m_numShapes;
+}
+
+
+void PathTracer::addLuminaire()
+{
+
+}
+
+
 void PathTracer::setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv)
 {
-    glm::mat4 scaleViewInvT = glm::transpose(scaleViewInv);
-    cuda_copyArrayToDevice(m_dScaleViewInvEye, glm::value_ptr(scaleViewInvT), 0, 12*sizeof(float));
-    cuda_copyArrayToDevice(m_dScaleViewInvEye, glm::value_ptr(eye), 12*sizeof(float), 4*sizeof(float));
+//    glm::mat4 scaleViewInvT = glm::transpose(scaleViewInv);
+    cuda_copyArrayToDevice(m_dScaleViewInvEye, glm::value_ptr(scaleViewInv), 0, 16*sizeof(float));
+    cuda_copyArrayToDevice(m_dScaleViewInvEye, glm::value_ptr(eye), 16*sizeof(float), 4*sizeof(float));
 }
 
 
@@ -59,7 +81,13 @@ void PathTracer::tracePath(const char *tex, GLuint width, GLuint height)
     cudaSurfaceObject_t surface;
     cuda_createSurfaceObject(&surface, &dsc);
 
-    cuda_tracePath(surface, m_dScaleViewInvEye, dim3(width, height));
+    cuda_tracePath(surface,
+                   m_dScaleViewInvEye,
+                   m_dShapes,
+                   m_numShapes,
+                   m_dLuminaires,
+                   m_numLuminaires,
+                   dim3(width, height));
 
     cuda_destroySurfaceObject(surface);
     cuda_graphicsUnmapResource(&res);

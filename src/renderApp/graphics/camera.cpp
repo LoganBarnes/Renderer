@@ -8,7 +8,7 @@
 Camera::Camera()
 {
     glm::vec4 eye = glm::vec4(0, 0, 5, 0);
-    glm::vec4 look = -eye;
+    glm::vec4 look = -eye; // normalized in "orientLook()"
     glm::vec4 up = glm::vec4(0, 1, 0, 0);
     orientLook(eye, look, up);
 

@@ -46,6 +46,7 @@ include_directories (
         "${PROJECT_BINARY_DIR}/src"
         "${PROJECT_SOURCE_DIR}/src"
         "${PROJECT_SOURCE_DIR}/src/application"
+        "${PROJECT_SOURCE_DIR}/src/shared"
         "${PROJECT_SOURCE_DIR}/src/renderApp"
         "${PROJECT_SOURCE_DIR}/src/renderApp/graphics"
         "${PROJECT_SOURCE_DIR}/src/glfw-3.1.2/include"
@@ -53,6 +54,7 @@ include_directories (
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/application")
+add_subdirectory("${PROJECT_SOURCE_DIR}/src/shared")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp/graphics")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/glfw-3.1.2")
@@ -71,7 +73,7 @@ endif (GLM_FOUND)
 find_package(GLEW REQUIRED)
 if (GLEW_FOUND)
     include_directories(${GLEW_INCLUDE_DIRS})
-    link_libraries(${GLEW_LIBRARIES})
+    set (EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
 endif (GLEW_FOUND)
 
 # create the cuda library

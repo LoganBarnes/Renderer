@@ -6,6 +6,10 @@
 
 typedef uint32_t GLenum;
 typedef uint32_t GLuint;
+typedef unsigned int uint;
+
+struct Shape;
+struct Luminaire;
 
 extern "C"
 {
@@ -38,7 +42,13 @@ extern "C"
     /*
      * from 'pathTrace.cu'
      */
-    void cuda_tracePath(cudaSurfaceObject_t surface, float *scaleViewInvEye, dim3 texDim);
+    void cuda_tracePath(cudaSurfaceObject_t surface,
+                        float *scaleViewInv,
+                        Shape *shapes,
+                        uint numShapes,
+                        Luminaire *luminaires,
+                        uint numLuminaires,
+                        dim3 texDim);
 }
 
 #endif // CUDA_FUNCTIONS_CUH

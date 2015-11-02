@@ -22,6 +22,8 @@ public:
     virtual void render(int interp = 1.0);
 
 private:
+    void _buildScene();
+
     GLHandler *m_glHandler;
     PathTracer *m_pathTracer;
     Camera *m_camera;

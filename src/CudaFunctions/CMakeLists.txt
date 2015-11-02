@@ -1,10 +1,10 @@
 # CMakeLists.txt to build CUDA program from cuda.cu
-cmake_minimum_required(VERSION 2.8)
 find_package(CUDA REQUIRED)
 
 set(CUDA_SOURCE
     ${CUDA_SOURCE}
     "${CMAKE_CURRENT_SOURCE_DIR}/wrappers.cu"
+    "${CMAKE_CURRENT_SOURCE_DIR}/intersections.cu"
     "${CMAKE_CURRENT_SOURCE_DIR}/pathTracer.cu"
 )
 
@@ -19,6 +19,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/helper_cuda.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/helper_math.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/helper_string.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/intersections.cuh"
     "${CMAKE_CURRENT_SOURCE_DIR}/CudaFunctions.cuh"
     PARENT_SCOPE
 )
@@ -29,10 +30,6 @@ set(
     --compiler-options -fno-strict-aliasing -use_fast_math
     --ptxas-options=-v --std=c++11"# -O2 -DVERBOSE"
 )
-
-
-#include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../glm/glm")
-#message("${CMAKE_CURRENT_SOURCE_DIR}")
 
 cuda_add_library(CudaFunctions ${CUDA_SOURCE})
 
