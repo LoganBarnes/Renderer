@@ -4,6 +4,7 @@ find_package(CUDA REQUIRED)
 set(CUDA_SOURCE
     ${CUDA_SOURCE}
     "${CMAKE_CURRENT_SOURCE_DIR}/wrappers.cu"
+    "${CMAKE_CURRENT_SOURCE_DIR}/random.cu"
     "${CMAKE_CURRENT_SOURCE_DIR}/intersections.cu"
     "${CMAKE_CURRENT_SOURCE_DIR}/pathTracer.cu"
 )
@@ -19,6 +20,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/helper_cuda.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/helper_math.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/helper_string.h"
+#    "${CMAKE_CURRENT_SOURCE_DIR}/random.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/intersections.cuh"
     "${CMAKE_CURRENT_SOURCE_DIR}/CudaFunctions.cuh"
     PARENT_SCOPE
@@ -32,6 +34,7 @@ set(
 )
 
 cuda_add_library(CudaFunctions ${CUDA_SOURCE})
+target_link_libraries(CudaFunctions ${CUDA_curand_LIBRARY})
 
 set(CUDA_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS} PARENT_SCOPE)
 

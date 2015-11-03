@@ -49,7 +49,7 @@ include_directories (
         "${PROJECT_SOURCE_DIR}/src/shared"
         "${PROJECT_SOURCE_DIR}/src/renderApp"
         "${PROJECT_SOURCE_DIR}/src/renderApp/graphics"
-        "${PROJECT_SOURCE_DIR}/src/glfw-3.1.2/include"
+#        "${PROJECT_SOURCE_DIR}/src/glfw-3.1.2/include"
 )
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
@@ -57,7 +57,7 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/src/application")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/shared")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp/graphics")
-add_subdirectory("${PROJECT_SOURCE_DIR}/src/glfw-3.1.2")
+#add_subdirectory("${PROJECT_SOURCE_DIR}/src/glfw-3.1.2")
 
 # resources
 add_subdirectory("${RESOURCES_PATH}/shaders")
@@ -69,18 +69,35 @@ if (GLM_FOUND)
     include_directories("${GLM_INCLUDE_DIRS}")
 endif (GLM_FOUND)
 
+# add opengl functionality
+find_package(OpenGL REQUIRED)
+if (OPENGL_FOUND)
+    message("-- Found OpenGL: ${OPENGL_INCLUDE_DIR}")
+    include_directories(${OPENGL_INCLUDE_DIR})
+    set (EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
+endif (OPENGL_FOUND)
+
 # add glew functionality
 find_package(GLEW REQUIRED)
-if (GLEW_FOUND)
+if (GLEW_FOUND) # GLEW has it's own 'found' message
     include_directories(${GLEW_INCLUDE_DIRS})
     set (EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
 endif (GLEW_FOUND)
 
+# add glfw3 functionality
+find_package(PkgConfig REQUIRED)
+pkg_search_module(GLFW REQUIRED glfw3)
+if (GLFW_FOUND)
+    message("-- Found GLFW: ${GLFW_INCLUDE_DIRS}")
+    include_directories(${GLFW_INCLUDE_DIRS})
+    set (EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARIES})
+endif (GLFW_FOUND)
+
 # create the cuda library
 if (USE_CUDA)
-        include_directories ("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
-	add_subdirectory (src/CudaFunctions)
-	set (EXTRA_LIBS ${EXTRA_LIBS} CudaFunctions)
+    include_directories ("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
+    add_subdirectory (src/CudaFunctions)
+    set (EXTRA_LIBS ${EXTRA_LIBS} CudaFunctions)
 endif (USE_CUDA)
 
 include_directories("${CUDA_INCLUDE_DIRS}")
@@ -88,7 +105,7 @@ include_directories("${CUDA_INCLUDE_DIRS}")
 # add the executable
 # RES_FILES is ignored by cmake but they show up in the build tree
 add_executable (Renderer ${SOURCE} ${HEADERS} ${RES_FILES})
-target_link_libraries (Renderer glfw ${GLFW_LIBRARIES} ${EXTRA_LIBS})
+target_link_libraries (Renderer ${EXTRA_LIBS})
 
 add_custom_command(TARGET Renderer POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
