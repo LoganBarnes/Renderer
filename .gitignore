@@ -21,3 +21,7 @@ Renderer.app
 #############
 Makefile
 
+# Valgrind #
+############
+*.supp
+

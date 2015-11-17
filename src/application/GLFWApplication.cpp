@@ -47,7 +47,6 @@ void GLFWApplication::setWindowSize(int width, int height)
 
 int GLFWApplication::execute(const char *title)
 {
-
     /* Initialize the library */
     if (!this->_initGLFW(title))
         return 1;

@@ -78,7 +78,6 @@ if (USE_CUDA)
     include_directories("${PROJECT_SOURCE_DIR}/src/CudaFunctions/cuHelpers")
 
     add_subdirectory("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
-#    add_subdirectory("${PROJECT_SOURCE_DIR}/src/CudaFunctions/cuHelpers")
 
     set (EXTRA_LIBS ${EXTRA_LIBS} CudaFunctions)
     include_directories("${CUDA_INCLUDE_DIRS}")
