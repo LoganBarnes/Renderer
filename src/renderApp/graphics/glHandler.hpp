@@ -4,19 +4,20 @@
 #include <unordered_map>
 
 typedef unsigned int GLuint;
+typedef int GLsizei;
 typedef float GLfloat;
 
 class GLHandler
 {
 
 public:
-    explicit GLHandler(GLuint width = 640, GLuint height = 480);
+    explicit GLHandler(GLsizei width = 640, GLsizei height = 480);
     virtual ~GLHandler();
 
     // getters
     GLuint getTexture() { return m_texture; }
-    GLuint getViewportWidth() { return m_viewportWidth; }
-    GLuint getViewportHeight() { return m_viewportHeight; }
+    GLsizei getViewportWidth() { return m_viewportWidth; }
+    GLsizei getViewportHeight() { return m_viewportHeight; }
 
 
     void addProgram(const char *name, const char *vertFilePath, const char *fragFilePath);
@@ -24,7 +25,7 @@ public:
 
     void render(const char *program);
 
-    void resize(GLuint width, GLuint height, bool resetTexture);
+    void resize(GLsizei width, GLsizei height, bool resetTexture);
 
     static std::string readFile(const char *filePath);
     static GLuint LoadShader(const char *vertex_path, const char *fragment_path);
@@ -35,7 +36,7 @@ private:
     std::unordered_map <const char*, GLuint> m_programs;
     GLuint m_vbo, m_vao;
 
-    GLuint m_viewportWidth, m_viewportHeight;
+    GLsizei m_viewportWidth, m_viewportHeight;
 
     GLuint m_texture;
 

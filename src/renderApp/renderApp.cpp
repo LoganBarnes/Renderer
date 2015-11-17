@@ -61,7 +61,9 @@ void RenderApp::init()
 void RenderApp::update(double)
 {
 //    std::cout << "updating RenderApp" << std::endl;
-    m_pathTracer->tracePath("tex", m_glHandler->getViewportWidth(), m_glHandler->getViewportHeight());
+    m_pathTracer->tracePath("tex",
+                            static_cast<GLuint>(m_glHandler->getViewportWidth()),
+                            static_cast<GLuint>(m_glHandler->getViewportHeight()));
 }
 
 
@@ -71,7 +73,7 @@ void RenderApp::handleKeyInput()
 }
 
 
-void RenderApp::render(int interp)
+void RenderApp::render(int)
 {
 //    std::cout << "rendering RenderApp : " << interp << std::endl;
     m_glHandler->render("default");

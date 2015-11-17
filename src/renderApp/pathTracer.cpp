@@ -12,8 +12,8 @@ PathTracer::PathTracer()
 {
     cuda_init(0, NULL);
 
-    cuda_allocateArray((void**)&m_dScaleViewInvEye, 20 * sizeof(float));
-    cuda_allocateArray((void**)&m_dShapes, MAX_DEVICE_SHAPES * sizeof(Shape));
+    cuda_allocateArray(reinterpret_cast<void**>(&m_dScaleViewInvEye), 20 * sizeof(float));
+    cuda_allocateArray(reinterpret_cast<void**>(&m_dShapes), MAX_DEVICE_SHAPES * sizeof(Shape));
 }
 
 
@@ -44,7 +44,7 @@ void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec4 color)
     Shape shape;
     shape.type = type;
     glm::mat4 inv = glm::inverse(trans);
-    set_float_mat4((float4 *)shape.inv, inv);
+    set_float_mat4(reinterpret_cast<float4*>(shape.inv), inv);
     shape.mat.color = make_float4(color.x, color.y, color.z, color.w);
 
     cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));

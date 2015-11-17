@@ -19,7 +19,7 @@ public:
     void setInternalApplication(Application *app);
     void setWindowSize(int width, int height);
 
-    int execute(int argc, const char **argv, const char *title = "GLFW Application");
+    int execute(const char *title = "GLFW Application");
 
     static void key_callback(GLFWwindow* window, int key, int, int action, int);
     static void error_callback(int error, const char* description);

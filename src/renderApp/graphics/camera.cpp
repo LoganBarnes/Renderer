@@ -63,7 +63,7 @@ glm::vec4 Camera::getUp()
 }
 
 glm::vec3 Camera::getRight(){
-    return glm::cross((glm::vec3)m_look,(glm::vec3)m_up);
+    return glm::cross(glm::vec3(m_look),glm::vec3(m_up));
 }
 
 glm::vec4 Camera::getEye()

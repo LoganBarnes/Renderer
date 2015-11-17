@@ -40,12 +40,12 @@ extern "C"
         checkCudaErrors(cudaFree(devPtr));
     }
 
-    void cuda_copyArrayToDevice(void *device, const void *host, int offset, int size)
+    void cuda_copyArrayToDevice(void *device, const void *host, uint offset, uint size)
     {
         checkCudaErrors(cudaMemcpy((char *) device + offset, host, size, cudaMemcpyHostToDevice));
     }
 
-    void cuda_copyArrayFromDevice(void *host, const void *device, int size)
+    void cuda_copyArrayFromDevice(void *host, const void *device, uint size)
     {
         checkCudaErrors(cudaMemcpy(host, device, size, cudaMemcpyDeviceToHost));
     }

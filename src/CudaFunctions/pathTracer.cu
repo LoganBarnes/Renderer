@@ -1,7 +1,7 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include "helper_cuda.h" // includes helper_math.h
-#include "shared/renderObjects.hpp"
+#include "renderObjects.hpp"
 #include "intersections.cu"
 
 

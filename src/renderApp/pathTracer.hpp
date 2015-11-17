@@ -29,7 +29,7 @@ public:
     void addLuminaire();
 
     void setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv);
-    void tracePath(const char *writeTex, GLuint width, GLuint height);
+    void tracePath(const char *writeTex, GLuint height, GLuint width);
 
 private:
 

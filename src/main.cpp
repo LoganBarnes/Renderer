@@ -2,9 +2,9 @@
 #include "renderApp.hpp"
 
 
-int main(int argc, const char **argv)
+int main(void)
 {
     GLFWApplication glApp;
     glApp.setInternalApplication(new RenderApp());
-    return glApp.execute(argc, argv);
+    return glApp.execute();
 }

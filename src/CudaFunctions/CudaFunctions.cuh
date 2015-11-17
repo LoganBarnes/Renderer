@@ -22,8 +22,8 @@ extern "C"
     void cuda_allocateArray(void **devPtr, int size);
     void cuda_freeArray(void *devPtr);
 
-    void cuda_copyArrayToDevice(void *device, const void *host, int offset, int size);
-    void cuda_copyArrayFromDevice(void *host, const void *device, int size);
+    void cuda_copyArrayToDevice(void *device, const void *host, uint offset, uint size);
+    void cuda_copyArrayFromDevice(void *host, const void *device, uint size);
 
     void cuda_registerGLTexture(cudaGraphicsResource_t* resource, GLuint tex, GLenum target, cudaGraphicsRegisterFlags flags);
     void cuda_unregisterResource(cudaGraphicsResource_t resource);

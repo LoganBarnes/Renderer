@@ -8,25 +8,6 @@ include(CTest)
 set (Renderer_VERSION_MAJOR 1)
 set (Renderer_VERSION_MINOR 0)
 
-if(MSVC)
-	# Force to always compile with W4
-	if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-		string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-	endif()
-elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-	# Update if necessary
-        set(
-            CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}
-            -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy
-            -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations
-            -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual
-            -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel
-            -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused"
-        )
-endif()
-
 # should we use cuda functions?
 option(USE_CUDA "Use CUDA kernels if available" ON)
 
@@ -49,15 +30,12 @@ include_directories (
         "${PROJECT_SOURCE_DIR}/src/shared"
         "${PROJECT_SOURCE_DIR}/src/renderApp"
         "${PROJECT_SOURCE_DIR}/src/renderApp/graphics"
-#        "${PROJECT_SOURCE_DIR}/src/glfw-3.1.2/include"
 )
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/application")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/shared")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp/graphics")
-#add_subdirectory("${PROJECT_SOURCE_DIR}/src/glfw-3.1.2")
 
 # resources
 add_subdirectory("${RESOURCES_PATH}/shaders")
@@ -95,74 +73,64 @@ endif (GLFW_FOUND)
 
 # create the cuda library
 if (USE_CUDA)
-    include_directories ("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
-    add_subdirectory (src/CudaFunctions)
+    find_package(CUDA REQUIRED)
+    include_directories("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
+    include_directories("${PROJECT_SOURCE_DIR}/src/CudaFunctions/cuHelpers")
+
+    add_subdirectory("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
+#    add_subdirectory("${PROJECT_SOURCE_DIR}/src/CudaFunctions/cuHelpers")
+
     set (EXTRA_LIBS ${EXTRA_LIBS} CudaFunctions)
+    include_directories("${CUDA_INCLUDE_DIRS}")
+
+    # ignore warnings from 3rd party files
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${CUDA_INCLUDE_DIRS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/src/CudaFunctions/cuHelpers")
 endif (USE_CUDA)
 
-include_directories("${CUDA_INCLUDE_DIRS}")
+# compile flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wcast-align -Wcast-qual")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winit-self -Wmissing-declarations -Wmissing-include-dirs")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Woverloaded-virtual -Wredundant-decls")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-overflow=5")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wswitch-default -Wundef -Werror -Wno-unused")
 
-# add the executable
+# make project into library that can be used by multiple executables (such as test classes)
 # RES_FILES is ignored by cmake but they show up in the build tree
-add_executable (Renderer ${SOURCE} ${HEADERS} ${RES_FILES})
-target_link_libraries (Renderer ${EXTRA_LIBS})
+add_library (RendererLib ${SOURCE} ${HEADERS} ${RES_FILES})
+
+add_subdirectory("${PROJECT_SOURCE_DIR}/src")
+add_executable (Renderer "${PROJECT_SOURCE_DIR}/src/main.cpp")
+target_link_libraries (Renderer RendererLib ${EXTRA_LIBS})
 
 add_custom_command(TARGET Renderer POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/res/shaders
         $<TARGET_FILE_DIR:Renderer>/shaders)
 
-# add the install targets
-install (TARGETS Renderer DESTINATION bin)
-install (FILES "${PROJECT_BINARY_DIR}/src/RendererConfig.hpp"
-	DESTINATION include)
 
 
+## testing
+#find_package(GTEST)
+#if (GTEST_FOUND)
+#    message("-- Found GTest: ${GTEST_INCLUDE_DIRS}")
+#    include_directories(${GTEST_INCLUDE_DIRS})
 
-# does the application run
-add_test (RendererRuns Renderer -s)
+#    # GMock
+#    include_directories("/usr/local/include/gmock")
+#    set(GMOCK_BOTH_LIBRARIES "/usr/local/lib/libgmock.a" "/usr/local/lib/libgmock_main.a")
 
-#define a macro to simplify adding tests
-macro (test_sum arg result)
-	add_test (RendererSum${arg} Renderer -s ${arg})
-	set_tests_properties (RendererSum${arg}
-		PROPERTIES PASS_REGULAR_EXPRESSION ${result}
-)
-endmacro (test_sum)
-
-# invalid input
-test_sum (-15 "ERROR:")
-test_sum (-1 "ERROR:")
-test_sum (-2.34 "ERROR:")
-test_sum (65536 "ERROR:") # higher than max valid input
-
-# invalid input made valid
-test_sum (2.34 "Using: 2")
-test_sum (0.001 "Using: 0")
-test_sum (90.210 "Using: 90")
-test_sum (6.66666 "Using: 6")
-test_sum (20394.857 "Using: 20394")
-
-# valid sums
-test_sum (0 "0 is 0") # min valid input
-test_sum (1 "1 is 1")
-test_sum (2 "2 is 3")
-test_sum (3 "3 is 6")
-test_sum (4 "4 is 10")
-test_sum (5 "5 is 15")
-test_sum (10 "10 is 55")
-
-# these can take a while
-test_sum (20485 "20485 is 209827855")
-test_sum (420 "420 is 88410")
-test_sum (12345 "12345 is 76205685")
-test_sum (23456 "23456 is 275103696")
-test_sum (34567 "34567 is 597456028")
-test_sum (45678 "45678 is 1043262681")
-test_sum (56789 "56789 is 1612523655")
-test_sum (65534 "65534 is 2147385345")
-test_sum (65535 "65535 is 2147450880") # max valid input
-
+#    add_subdirectory("${PROJECT_SOURCE_DIR}/src/testing")
+#    foreach( testsourcefile ${TEST_SOURCES} )
+#        # I used a simple string replace, to cut off .cpp and path.
+#        string( REPLACE ".cpp" "" testname ${testsourcefile} )
+#        string( REPLACE "${PROJECT_SOURCE_DIR}/src/testing/" "" testname ${testname} )
+#        add_executable( ${testname} ${testsourcefile} )
+#        # Make sure lib is linked to each app
+#        target_link_libraries( ${testname} RecognitionLib ${EXTRA_LIBS} ${GTEST_BOTH_LIBRARIES} ${GMOCK_BOTH_LIBRARIES})
+#    endforeach( testsourcefile ${TEST_SOURCES} )
+#endif (GTEST_FOUND)
 
 
 

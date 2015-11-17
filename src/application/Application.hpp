@@ -8,12 +8,14 @@ class Application
 {
 
 public:
+    virtual ~Application() {}
+
     virtual void init() {}
 
     virtual void update(double) {}
     virtual void handleKeyInput() {}
 
-    virtual void render(int interp = 1.0) {}
+    virtual void render(int /*interp = 1.0*/) {}
 };
 
 #endif // APPLICATION_H
