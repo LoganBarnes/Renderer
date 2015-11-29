@@ -1,10 +1,9 @@
-#include "GLFWApplication.hpp"
+//#include "GLFWApplication.hpp"
 #include "renderApp.hpp"
 
 
-int main(void)
+int main(int argc, const char **argv)
 {
-    GLFWApplication glApp;
-    glApp.setInternalApplication(new RenderApp());
-    return glApp.execute();
+    RenderApp app;
+    return app.execute(argc, argv);
 }

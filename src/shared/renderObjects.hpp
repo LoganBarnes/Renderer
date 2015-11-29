@@ -2,8 +2,10 @@
 #define RENDER_OBJECTS_H
 
 #include <glm/glm.hpp>
-#include "helper_math.h"
 #include "renderTypes.hpp"
+#include "renderer-config.hpp"
+#ifdef USE_CUDA
+#include "helper_math.h"
 
 /*
  * Matrix initializer. Matrix stored in column major order.
@@ -56,6 +58,37 @@ struct Luminaire
     float4 radiance;
 };
 
+#else
+
+/*
+ * Object definitions
+ */
+
+struct Ray
+{
+    glm::vec3 orig;
+    glm::vec3 dir;
+};
+
+struct Material
+{
+    glm::vec4 color;
+};
+
+struct Shape
+{
+    ShapeType type;
+    glm::mat4 inv;
+    Material mat;
+};
+
+struct Luminaire
+{
+    LuminaireType type;
+    glm::mat4 radiance;
+};
+
+#endif // USE_CUDA
 
 
 #endif // RENDER_OBJECTS_H

@@ -1,9 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 project (Renderer)
 
-# for testing
-include(CTest)
-
 # The version number.
 set (Renderer_VERSION_MAJOR 1)
 set (Renderer_VERSION_MINOR 0)
@@ -11,25 +8,27 @@ set (Renderer_VERSION_MINOR 0)
 # should we use cuda functions?
 option(USE_CUDA "Use CUDA kernels if available" ON)
 
+# should we use graphics functions?
+option(USE_GRAPHICS "Use CUDA kernels if available" ON)
+
 # resource location
 set(RESOURCES_PATH "${PROJECT_SOURCE_DIR}/res")
 
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
-	"${PROJECT_SOURCE_DIR}/src/RendererConfig.hpp.in"
-        "${PROJECT_BINARY_DIR}/src/RendererConfig.hpp"
+        "${PROJECT_SOURCE_DIR}/src/renderer-config.hpp.in"
+        "${PROJECT_BINARY_DIR}/src/renderer-config.hpp"
 )
 
 # add the binary tree to the search path for include files
-# so that we will find RendererConfig.hpp
+# so that we will find renderer-config.hpp
 include_directories (
         "${PROJECT_BINARY_DIR}/src"
         "${PROJECT_SOURCE_DIR}/src"
         "${PROJECT_SOURCE_DIR}/src/application"
         "${PROJECT_SOURCE_DIR}/src/shared"
         "${PROJECT_SOURCE_DIR}/src/renderApp"
-        "${PROJECT_SOURCE_DIR}/src/renderApp/graphics"
 )
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/application")
@@ -40,13 +39,19 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp/graphics")
 # resources
 add_subdirectory("${RESOURCES_PATH}/shaders")
 
-# add glm functionality
-find_package(GLM REQUIRED)
-if (GLM_FOUND)
-    message("-- Found GLM: ${GLM_INCLUDE_DIRS}")
-    include_directories("${GLM_INCLUDE_DIRS}")
-endif (GLM_FOUND)
+## add glm functionality
+#find_package(GLM REQUIRED)
+#if (GLM_FOUND)
+#    message("-- Found GLM: ${GLM_INCLUDE_DIRS}")
+#    include_directories("${GLM_INCLUDE_DIRS}")
+#endif (GLM_FOUND)
 
+# using the above method ^ adds the /usr/local/include dir
+# to the qt creator build tree (which is annoying)
+include_directories("/usr/local/include/glm")
+
+if (USE_GRAPHICS)
+include_directories("${PROJECT_SOURCE_DIR}/src/renderApp/graphics")
 # add opengl functionality
 find_package(OpenGL REQUIRED)
 if (OPENGL_FOUND)
@@ -70,6 +75,7 @@ if (GLFW_FOUND)
     include_directories(${GLFW_INCLUDE_DIRS})
     set (EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARIES})
 endif (GLFW_FOUND)
+endif (USE_GRAPHICS)
 
 # create the cuda library
 if (USE_CUDA)
@@ -102,34 +108,6 @@ add_library (RendererLib ${SOURCE} ${HEADERS} ${RES_FILES})
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 add_executable (Renderer "${PROJECT_SOURCE_DIR}/src/main.cpp")
 target_link_libraries (Renderer RendererLib ${EXTRA_LIBS})
-
-add_custom_command(TARGET Renderer POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/res/shaders
-        $<TARGET_FILE_DIR:Renderer>/shaders)
-
-
-
-## testing
-#find_package(GTEST)
-#if (GTEST_FOUND)
-#    message("-- Found GTest: ${GTEST_INCLUDE_DIRS}")
-#    include_directories(${GTEST_INCLUDE_DIRS})
-
-#    # GMock
-#    include_directories("/usr/local/include/gmock")
-#    set(GMOCK_BOTH_LIBRARIES "/usr/local/lib/libgmock.a" "/usr/local/lib/libgmock_main.a")
-
-#    add_subdirectory("${PROJECT_SOURCE_DIR}/src/testing")
-#    foreach( testsourcefile ${TEST_SOURCES} )
-#        # I used a simple string replace, to cut off .cpp and path.
-#        string( REPLACE ".cpp" "" testname ${testsourcefile} )
-#        string( REPLACE "${PROJECT_SOURCE_DIR}/src/testing/" "" testname ${testname} )
-#        add_executable( ${testname} ${testsourcefile} )
-#        # Make sure lib is linked to each app
-#        target_link_libraries( ${testname} RecognitionLib ${EXTRA_LIBS} ${GTEST_BOTH_LIBRARIES} ${GMOCK_BOTH_LIBRARIES})
-#    endforeach( testsourcefile ${TEST_SOURCES} )
-#endif (GTEST_FOUND)
 
 
 

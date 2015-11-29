@@ -1,30 +1,24 @@
 #ifndef RENDER_APP_H
 #define RENDER_APP_H
 
-#include "Application.hpp"
-
-class GLHandler;
+class GraphicsHandler;
 class PathTracer;
 class Camera;
 
-class RenderApp : public Application
+class RenderApp
 {
 
 public:
     explicit RenderApp();
     virtual ~RenderApp();
 
-    virtual void init();
-
-    virtual void update(double deltaTime);
-    virtual void handleKeyInput();
-
-    virtual void render(int interp = 1.0);
+    int execute(int argc, const char **argv);
 
 private:
     void _buildScene();
+    int _runLoop();
 
-    GLHandler *m_glHandler;
+    GraphicsHandler *m_graphics;
     PathTracer *m_pathTracer;
     Camera *m_camera;
 };

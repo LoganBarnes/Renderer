@@ -1,83 +1,109 @@
+#include <GL/glew.h>
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 #include "renderApp.hpp"
-#include "glHandler.hpp"
 #include "pathTracer.hpp"
-#include "camera.hpp"
-#include "RendererConfig.hpp"
+#include "renderer-config.hpp"
 #include "renderObjects.hpp"
+
+const int DEFAULT_WIDTH = 640;
+const int DEFAULT_HEIGHT = 480;
+
+
+#ifdef USE_GRAPHICS
+#include "graphicsHandler.hpp"
+#include "camera.hpp"
+#endif
 
 
 RenderApp::RenderApp()
-    : m_glHandler(NULL),
+    : m_graphics(NULL),
       m_pathTracer(NULL),
       m_camera(NULL)
 {
-    m_glHandler = new GLHandler();
-    m_pathTracer = new PathTracer();
+#ifdef USE_GRAPHICS
+    m_graphics = new GraphicsHandler(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     m_camera = new Camera();
+#endif
+    m_pathTracer = new PathTracer();
 }
 
 RenderApp::~RenderApp()
 {
+#ifdef USE_GRAPHICS
     m_pathTracer->unregisterTexture("tex");
 
-    if (m_glHandler)
-        delete m_glHandler;
-    if (m_pathTracer)
-        delete m_pathTracer;
     if (m_camera)
         delete m_camera;
+    if (m_graphics)
+        delete m_graphics;
+#endif
+    if (m_pathTracer)
+        delete m_pathTracer;
 }
 
-void RenderApp::init()
+int RenderApp::execute(int argc, const char **argv)
 {
+    m_pathTracer->init(argc, argv);
+
+#ifdef USE_GRAPHICS
+    if (!m_graphics->init("Render App"))
+        return 1;
+
     std::string vertPath = std::string(RESOURCES_PATH) + "/shaders/default.vert";
     std::string fragPath = std::string(RESOURCES_PATH) + "/shaders/default.frag";
-    m_glHandler->addProgram("default", vertPath.c_str(), fragPath.c_str());
+    m_graphics->addProgram("default", vertPath.c_str(), fragPath.c_str());
 
-    GLfloat *data = new GLfloat[8]();
-    data[0] = -1;
-    data[1] =  1;
-    data[2] = -1;
-    data[3] = -1;
-    data[4] =  1;
-    data[5] =  1;
-    data[6] =  1;
-    data[7] = -1;
+    GLfloat screenData[8] = {-1, 1, -1, -1, 1, 1, 1, -1};
+    m_graphics->addUVBuffer("fullscreen", "default", screenData, 8);
 
-    m_glHandler->setBuffer("default", data);
-    delete[] data;
+    m_graphics->addTextureArray("tex", DEFAULT_WIDTH, DEFAULT_HEIGHT, NULL);
 
-    m_glHandler->resize(640, 480, true);
-    m_camera->setAspectRatio(640.f / 480.f);
+    m_camera->setAspectRatio(
+                static_cast<float>(DEFAULT_WIDTH) /
+                static_cast<float>(DEFAULT_HEIGHT));
 
-    m_pathTracer->register2DTexture("tex", m_glHandler->getTexture());
+    m_pathTracer->register2DTexture("tex", m_graphics->getTexture("tex"));
     m_pathTracer->setScaleViewInvEye(m_camera->getEye(), m_camera->getScaleViewInvMatrix());
+#endif
 
     _buildScene();
+
+    return this->_runLoop();
 }
 
-void RenderApp::update(double)
+
+int RenderApp::_runLoop()
 {
-//    std::cout << "updating RenderApp" << std::endl;
-    m_pathTracer->tracePath("tex",
-                            static_cast<GLuint>(m_glHandler->getViewportWidth()),
-                            static_cast<GLuint>(m_glHandler->getViewportHeight()));
+#ifdef USE_GRAPHICS
+    while (!m_graphics->checkWindowShouldClose())
+    {
+        m_pathTracer->tracePath("tex", DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        m_graphics->render("default", "fullscreen", 4, GL_TRIANGLE_STRIP, "tex");
+        m_graphics->updateWindow();
+    }
+#endif
+
+    return 0;
 }
 
 
-void RenderApp::handleKeyInput()
-{
+//void RenderApp::update(double)
+//{
+//    m_pathTracer->tracePath("tex", DEFAULT_WIDTH, DEFAULT_HEIGHT);
+//}
 
-}
+
+//void RenderApp::handleKeyInput()
+//{
+
+//}
 
 
-void RenderApp::render(int)
-{
-//    std::cout << "rendering RenderApp : " << interp << std::endl;
-    m_glHandler->render("default");
-}
+//void RenderApp::render(int)
+//{
+//    m_graphics->render("default", "fullscreen", 4, GL_TRIANGLE_STRIP, "tex");
+//}
 
 
 void RenderApp::_buildScene()

@@ -5,3 +5,6 @@
 
 // use cuda function if available
 #cmakedefine USE_CUDA
+
+// use graphics features
+#cmakedefine USE_GRAPHICS
