@@ -4,6 +4,7 @@ set(CUDA_SOURCE
     ${CUDA_SOURCE}
     "${CMAKE_CURRENT_SOURCE_DIR}/wrappers.cu"
     "${CMAKE_CURRENT_SOURCE_DIR}/random.cu"
+    "${CMAKE_CURRENT_SOURCE_DIR}/random_kernel.cu"
     "${CMAKE_CURRENT_SOURCE_DIR}/intersections.cu"
     "${CMAKE_CURRENT_SOURCE_DIR}/pathTracer.cu"
 )

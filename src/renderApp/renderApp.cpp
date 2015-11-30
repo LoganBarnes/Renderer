@@ -42,9 +42,10 @@ RenderApp::~RenderApp()
         delete m_pathTracer;
 }
 
+//int RenderApp::execute(int , const char **)
 int RenderApp::execute(int argc, const char **argv)
 {
-    m_pathTracer->init(argc, argv);
+    m_pathTracer->init(argc, argv, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
 #ifdef USE_GRAPHICS
     if (!m_graphics->init("Render App"))
@@ -112,38 +113,44 @@ void RenderApp::_buildScene()
     trans *= glm::translate(glm::mat4(), glm::vec3(-2.5, 0, -1.5));
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(0, 1, 0));
     trans *= glm::scale(glm::mat4(), glm::vec3(2, 2.5, 1));
-    m_pathTracer->addShape(QUAD, trans, glm::vec4(0.8, 0, 0, 1));
+    m_pathTracer->addShape(QUAD, trans, glm::vec3(0.8, 0, 0));
 
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(2.5, 0, -1.5));
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(0, 1, 0));
     trans *= glm::scale(glm::mat4(), glm::vec3(2, 2.5, 1));
-    m_pathTracer->addShape(QUAD, trans, glm::vec4(0, 0.8, 0, 1));
+    m_pathTracer->addShape(QUAD, trans, glm::vec3(0, 0.8, 0));
 
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(0, 2.5, -1.5));
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1, 0, 0));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501, 2.001, 1));
-    m_pathTracer->addShape(QUAD, trans, glm::vec4(0.8, 0.8, 0.8, 1));
+    m_pathTracer->addShape(QUAD, trans, glm::vec3(0.8, 0.8, 0.8));
 
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(0, -2.5, -1.5));
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1, 0, 0));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501, 2.001, 1));
-    m_pathTracer->addShape(QUAD, trans, glm::vec4(0.8, 0.8, 0.8, 1));
+    m_pathTracer->addShape(QUAD, trans, glm::vec3(0.8, 0.8, 0.8));
 
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(0, 0, -3.5));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501, 2.501, 1));
-    m_pathTracer->addShape(QUAD, trans, glm::vec4(0.8, 0.8, 0.8, 1));
+    m_pathTracer->addShape(QUAD, trans, glm::vec3(0.8, 0.8, 0.8));
 
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(1, -1.5, -0.5));
-    m_pathTracer->addShape(SPHERE, trans, glm::vec4(1));
+    m_pathTracer->addShape(SPHERE, trans, glm::vec3(1));
 
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(-1, -1.5, -2.5));
-    m_pathTracer->addShape(SPHERE, trans, glm::vec4(1));
+    m_pathTracer->addShape(SPHERE, trans, glm::vec3(1));
+
+    trans = glm::mat4();
+    trans *= glm::translate(glm::mat4(), glm::vec3(0, 2.49, -1.5));
+    trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1, 0, 0));
+    trans *= glm::scale(glm::mat4(), glm::vec3(.5, .3, 1));
+    m_pathTracer->addAreaLight(QUAD, trans, glm::vec3(4));
 }
 
 

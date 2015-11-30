@@ -7,10 +7,13 @@
 #include "renderer-config.hpp"
 
 typedef unsigned int GLuint;
+
+#ifdef USE_CUDA
+#include <curand_kernel.h>
 typedef struct cudaGraphicsResource *cudaGraphicsResource_t;
+#endif
 
 struct Shape;
-struct Luminaire;
 
 /**
  * @brief The PathTracer class.
@@ -23,13 +26,13 @@ public:
     explicit PathTracer();
     virtual ~PathTracer();
 
-    void init(int argc, const char **argv);
+    void init(int argc, const char **argv, GLuint width, GLuint height);
 
     void register2DTexture(const char *name, GLuint tex);
     void unregisterTexture(const char *name);
 
-    void addShape(ShapeType type, glm::mat4 trans, glm::vec4 color);
-    void addLuminaire();
+    void addShape(ShapeType type, glm::mat4 trans, glm::vec3 color);
+    void addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 radiance);
 
     void setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv);
     void tracePath(const char *writeTex, GLuint width, GLuint height);
@@ -45,7 +48,9 @@ private:
 
     float *m_dScaleViewInvEye;  // device matrix
     Shape *m_dShapes;           // device shapes
-    Luminaire *m_dLuminaires;   // device luminaires
+    Shape *m_dAreaLights;   // device luminaires
+
+    curandState *m_dRandState;
 
 #else
 
@@ -61,7 +66,7 @@ private:
 #endif
 
     GLuint m_numShapes;
-    GLuint m_numLuminaires;
+    GLuint m_numAreaLights;
 
     bool m_initialized;
 };

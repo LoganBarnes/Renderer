@@ -100,10 +100,11 @@ extern "C"
 
     // check for intersections with every shape except the excluded one
     __device__
-    int intersectWorld(Ray r, Shape *shapes, uint numShapes, float4 &n, Shape &s, int exclude)
+    bool intersectWorld(Ray r, Shape *shapes, uint numShapes, SurfaceElement &surfel, int exclude)
     {
-        n = make_float4(INF);
+        float4 n = make_float4(INF);
         float4 tempN = make_float4(INF);
+        Shape s;
         int index = -1;
 
 
@@ -182,6 +183,25 @@ extern "C"
 //            n.xyz = normalize(n.xyz);
 //        }
 
-        return index;
+        if (index >= 0)
+        {
+            surfel.point = r.orig + r.dir * n.w;
+
+            float3 mat3[3];
+            make_float_mat3(mat3, s.inv);
+            float3 transposed[3];
+            transpose_float_mat3(transposed, mat3);
+
+            surfel.normal = make_float3(n);
+            surfel.normal = transposed * normalize(surfel.normal);
+            surfel.normal = normalize(surfel.normal);
+
+            surfel.material = s.material;
+            surfel.index = s.index;
+
+            return true;
+        }
+
+        return false;
     }
 }

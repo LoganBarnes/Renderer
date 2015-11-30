@@ -8,17 +8,20 @@
 #include "CudaFunctions.cuh"
 #endif
 
+const uint64_t RAND_SEED = 1337;
+
 PathTracer::PathTracer()
 #ifdef USE_CUDA
     : m_dScaleViewInvEye(NULL),
       m_dShapes(NULL),
-      m_dLuminaires(NULL),
+      m_dAreaLights(NULL),
+      m_dRandState(NULL),
 #else
     : m_hShapes(NULL),
       m_hLuminaires(NULL),
 #endif
       m_numShapes(0),
-      m_numLuminaires(0),
+      m_numAreaLights(0),
       m_initialized(false)
 {}
 
@@ -36,10 +39,15 @@ PathTracer::~PathTracer()
         cuda_freeArray(m_dShapes);
         m_dShapes = NULL;
     }
-    if (m_dLuminaires)
+    if (m_dAreaLights)
     {
-        cuda_freeArray(m_dLuminaires);
+        cuda_freeArray(m_dAreaLights);
         m_dShapes = NULL;
+    }
+    if (m_dRandState)
+    {
+        cuda_freeArray(m_dRandState);
+        m_dRandState = NULL;
     }
 
     if (m_initialized)
@@ -60,13 +68,17 @@ PathTracer::~PathTracer()
 
 
 #ifdef USE_CUDA
-void PathTracer::init(int argc, const char **argv)
+void PathTracer::init(int argc, const char **argv, GLuint width, GLuint height)
 {
     cuda_init(argc, argv);
     m_initialized = true;
 
+    cuda_allocateArray(reinterpret_cast<void**>(&m_dRandState), static_cast<int>(width * height * sizeof(curandState)));
+    cuda_initCuRand(m_dRandState, RAND_SEED, dim3(width, height));
+
     cuda_allocateArray(reinterpret_cast<void**>(&m_dScaleViewInvEye), 20 * sizeof(float));
     cuda_allocateArray(reinterpret_cast<void**>(&m_dShapes), MAX_DEVICE_SHAPES * sizeof(Shape));
+    cuda_allocateArray(reinterpret_cast<void**>(&m_dAreaLights), MAX_DEVICE_AREA_LIGHTS * sizeof(Shape));
 #else
 void PathTracer::init(int, const char**)
 {
@@ -97,14 +109,20 @@ void PathTracer::unregisterTexture(const char *name)
 }
 
 
-void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec4 color)
+void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec3 color)
 {
+    if (m_numShapes == MAX_DEVICE_SHAPES)
+        return;
+
     Shape shape;
     shape.type = type;
 #ifdef USE_CUDA
     glm::mat4 inv = glm::inverse(trans);
-    set_float_mat4(reinterpret_cast<float4*>(shape.inv), inv);
-    shape.mat.color = make_float4(color.x, color.y, color.z, color.w);
+    set_float_mat4(shape.trans, inv);
+    set_float_mat4(shape.inv, inv);
+    shape.material.color = make_float3(color.x, color.y, color.z);
+    shape.material.emitted = make_float3(0.f);
+    shape.index = m_numShapes;
 
     cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
 #else
@@ -116,8 +134,31 @@ void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec4 color)
 }
 
 
-void PathTracer::addLuminaire()
+void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 radiance)
 {
+    if (m_numShapes >= MAX_DEVICE_SHAPES ||
+            m_numAreaLights >= MAX_DEVICE_AREA_LIGHTS)
+        return;
+
+    Shape shape;
+    shape.type = type;
+#ifdef USE_CUDA
+    glm::mat4 inv = glm::inverse(trans);
+    set_float_mat4(shape.trans, inv);
+    set_float_mat4(shape.inv, inv);
+    shape.material.color = make_float3(0.f);
+    shape.material.emitted = make_float3(radiance.r, radiance.g, radiance.b);
+    shape.index = m_numShapes;
+
+    cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
+    cuda_copyArrayToDevice(m_dAreaLights, &shape, m_numAreaLights * sizeof(Shape), sizeof(Shape));
+#else
+    shape.inv = glm::inverse(trans);
+    shape.mat.color = color;
+    m_hShapes[m_numShapes] = shape;
+#endif
+    ++m_numShapes;
+    ++m_numAreaLights;
 
 }
 
@@ -164,9 +205,10 @@ void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height)
                    m_dScaleViewInvEye,
                    m_dShapes,
                    m_numShapes,
-                   m_dLuminaires,
-                   m_numLuminaires,
-                   dim3(width, height));
+                   m_dAreaLights,
+                   m_numAreaLights,
+                   dim3(width, height),
+                   m_dRandState);
 
     cuda_destroySurfaceObject(surface);
     cuda_graphicsUnmapResource(&res);
