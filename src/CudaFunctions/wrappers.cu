@@ -7,12 +7,12 @@ typedef unsigned long ulong;
 
 extern "C"
 {
-    void cuda_init(int argc, const char **argv)
+    void cuda_init(int argc, const char **argv, bool print)
     {
         int devID;
 
         // use device with highest Gflops/s
-        devID = findCudaDevice(argc, argv);
+        devID = findCudaDevice(argc, argv, print);
 
         if (devID < 0)
         {
@@ -40,12 +40,12 @@ extern "C"
         checkCudaErrors(cudaFree(devPtr));
     }
 
-    void cuda_copyArrayToDevice(void *device, const void *host, uint offset, uint size)
+    void cuda_copyArrayToDevice(void *device, const void *host, size_t offset, size_t size)
     {
         checkCudaErrors(cudaMemcpy((char *) device + offset, host, size, cudaMemcpyHostToDevice));
     }
 
-    void cuda_copyArrayFromDevice(void *host, const void *device, uint size)
+    void cuda_copyArrayFromDevice(void *host, const void *device, size_t size)
     {
         checkCudaErrors(cudaMemcpy(host, device, size, cudaMemcpyDeviceToHost));
     }
@@ -95,16 +95,4 @@ extern "C"
         checkCudaErrors(cudaDeviceSynchronize());
     }
 
-    //Round a / b to nearest higher integer value
-    uint iDivUp(uint a, uint b)
-    {
-        return (a % b != 0) ? (a / b + 1) : (a / b);
-    }
-
-    // compute grid and thread block size for a given number of elements
-    void computeGridSize(uint n, uint blockSize, uint &numBlocks, uint &numThreads)
-    {
-        numThreads = min(blockSize, n);
-        numBlocks = iDivUp(n, numThreads);
-    }
 }

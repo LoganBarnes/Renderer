@@ -1192,7 +1192,7 @@ inline int gpuGetMaxGflopsDeviceId()
 
 
 // Initialization code to find the best CUDA Device
-inline int findCudaDevice(int argc, const char **argv)
+inline int findCudaDevice(int argc, const char **argv, bool print)
 {
     cudaDeviceProp deviceProp;
     int devID = 0;
@@ -1224,7 +1224,8 @@ inline int findCudaDevice(int argc, const char **argv)
         devID = gpuGetMaxGflopsDeviceId();
         checkCudaErrors(cudaSetDevice(devID));
         checkCudaErrors(cudaGetDeviceProperties(&deviceProp, devID));
-        printf("GPU Device %d: \"%s\" with compute capability %d.%d\n\n", devID, deviceProp.name, deviceProp.major, deviceProp.minor);
+        if (print)
+            printf("GPU Device %d: \"%s\" with compute capability %d.%d\n\n", devID, deviceProp.name, deviceProp.major, deviceProp.minor);
     }
 
     return devID;

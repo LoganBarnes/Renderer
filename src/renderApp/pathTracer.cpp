@@ -73,7 +73,7 @@ void PathTracer::init(int argc, const char **argv, GLuint width, GLuint height)
     cuda_init(argc, argv);
     m_initialized = true;
 
-    cuda_allocateArray(reinterpret_cast<void**>(&m_dRandState), static_cast<int>(width * height * sizeof(curandState)));
+    cuda_allocateArray(reinterpret_cast<void**>(&m_dRandState), width * height * sizeof(curandState));
     cuda_initCuRand(m_dRandState, RAND_SEED, dim3(width, height));
 
     cuda_allocateArray(reinterpret_cast<void**>(&m_dScaleViewInvEye), 20 * sizeof(float));

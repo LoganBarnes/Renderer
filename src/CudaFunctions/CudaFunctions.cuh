@@ -16,14 +16,14 @@ extern "C"
     /*
      * from 'wrappers.cu'
      */
-    void cuda_init(int argc, const char **argv);
+    void cuda_init(int argc, const char **argv, bool print = true);
     void cuda_destroy();
 
-    void cuda_allocateArray(void **devPtr, int size);
+    void cuda_allocateArray(void **devPtr, size_t size);
     void cuda_freeArray(void *devPtr);
 
-    void cuda_copyArrayToDevice(void *device, const void *host, uint offset, uint size);
-    void cuda_copyArrayFromDevice(void *host, const void *device, uint size);
+    void cuda_copyArrayToDevice(void *device, const void *host, size_t offset, size_t size);
+    void cuda_copyArrayFromDevice(void *host, const void *device, size_t size);
 
     void cuda_registerGLTexture(cudaGraphicsResource_t* resource, GLuint tex, GLenum target, cudaGraphicsRegisterFlags flags);
     void cuda_unregisterResource(cudaGraphicsResource_t resource);

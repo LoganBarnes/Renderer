@@ -40,8 +40,11 @@ extern "C"
             float x = 1.f - curand_uniform(state + id);
             float y = 1.f - curand_uniform(state + id);
 
-            surfel.point = make_float3(shape.trans * make_float4(0.f, 0.f, 0.f, 1.f));
-//            surfel.point = make_float3(shape.trans * make_float4(x, y, 0.f, 1.f));
+            x = x * 2.f - 1.f;
+            y = y * 2.f - 1.f;
+
+//            surfel.point = make_float3(shape.trans * make_float4(0.f, 0.f, 0.f, 1.f));
+            surfel.point = make_float3(shape.trans * make_float4(x, y, 0.f, 1.f));
             surfel.normal = make_float3(shape.trans * make_float4(0.f, 0.f, 1.f, 0.f));
             surfel.material = shape.material;
             surfel.index = static_cast<int>(shape.index);

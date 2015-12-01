@@ -115,3 +115,26 @@ target_link_libraries (Renderer RendererLib ${EXTRA_LIBS})
 
 
 
+# testing
+find_package(GTEST)
+if (GTEST_FOUND)
+    include_directories(${GTEST_INCLUDE_DIRS})
+
+    # GMock
+    include_directories("/usr/local/include/gmock")
+    set(GMOCK_BOTH_LIBRARIES "/usr/local/lib/libgmock.a" "/usr/local/lib/libgmock_main.a")
+
+    add_subdirectory("${PROJECT_SOURCE_DIR}/src/testing")
+    foreach( testsourcefile ${TEST_SOURCES} )
+        # I used a simple string replace, to cut off .cpp and path.
+        string( REPLACE ".cpp" "" testname ${testsourcefile} )
+        string( REPLACE "${PROJECT_SOURCE_DIR}/src/testing/" "" testname ${testname} )
+        add_executable( ${testname} ${testsourcefile} )
+        # Make sure lib is linked to each app
+        target_link_libraries( ${testname} RendererLib ${EXTRA_LIBS} ${GTEST_BOTH_LIBRARIES} ${GMOCK_BOTH_LIBRARIES})
+    endforeach( testsourcefile ${TEST_SOURCES} )
+endif (GTEST_FOUND)
+
+
+
+

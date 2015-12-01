@@ -7,6 +7,8 @@ set(CUDA_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/random_kernel.cu"
     "${CMAKE_CURRENT_SOURCE_DIR}/intersections.cu"
     "${CMAKE_CURRENT_SOURCE_DIR}/pathTracer.cu"
+#testing
+    "${CMAKE_CURRENT_SOURCE_DIR}/tester.cu"
 )
 
 
@@ -18,15 +20,16 @@ set(SOURCE
 
 set(HEADERS
     ${HEADERS}
-#    "${CMAKE_CURRENT_SOURCE_DIR}/random.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/intersections.cuh"
     "${CMAKE_CURRENT_SOURCE_DIR}/CudaFunctions.cuh"
+#testing
+    "${CMAKE_CURRENT_SOURCE_DIR}/tester.cuh"
     PARENT_SCOPE
 )
 
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -O3 -gencode arch=compute_30,code=sm_30")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --compiler-options -fno-strict-aliasing -use_fast_math")
-set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --ptxas-options=-v --std=c++11")
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --ptxas-options=-v")
 
 cuda_add_library(CudaFunctions ${CUDA_SOURCE})
 target_link_libraries(CudaFunctions ${CUDA_curand_LIBRARY})

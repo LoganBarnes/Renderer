@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include "helper_cuda.h" // includes helper_math.h
+#include "helper_grid.h"
 #include "renderObjects.hpp"
 #include "intersections.cu"
 #include "random_kernel.cu"
@@ -10,7 +11,7 @@ __device__ const bool DIRECT = true;
 __device__ const bool INDIRECT = true;
 
 __device__ const float BUMP_VAL = 0.0001f;
-__device__ const float PI_F = 3.141592653539f;
+//__device__ const float PI_F = 3.141592653539f;
 
 extern "C"
 {
@@ -213,8 +214,10 @@ extern "C"
                         curandState *randState)
     {
         dim3 thread(32, 32);
-        dim3 block(static_cast<unsigned long>(std::ceil(texDim.x / thread.x)),
-                   static_cast<unsigned long>(std::ceil(texDim.y / thread.y)));
+        dim3 block(1);
+        computeGridSize(texDim.x, thread.x, block.x, thread.x);
+        computeGridSize(texDim.y, thread.y, block.y, thread.y);
+
         tracePath_kernel<<< block, thread >>>(surface,
                                               (float4 *)scaleViewInvEye,
                                               shapes,
