@@ -30,14 +30,6 @@ include_directories (
         "${PROJECT_SOURCE_DIR}/include/renderApp"
         # renderApp/graphics added later
 )
-# so headers show up in qt build tree
-add_subdirectory("${PROJECT_SOURCE_DIR}/include")
-
-add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp")
-add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp/graphics")
-
-# resources
-add_subdirectory("${RESOURCES_PATH}/shaders")
 
 ## add glm functionality
 #find_package(GLM REQUIRED)
@@ -103,9 +95,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wswitch-default -Wundef -Werror -Wno-un
 
 # make project into library that can be used by multiple executables (such as test classes)
 # RES_FILES is ignored by cmake but they show up in the build tree
-add_library (RendererLib STATIC ${SOURCE} ${HEADERS} ${RES_FILES})
-
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
+# USED WITH QT CREATOR
+add_subdirectory("${PROJECT_SOURCE_DIR}/include") # QT
+add_subdirectory("${RESOURCES_PATH}") # QT
+add_library (RendererLib ${SOURCE} ${HEADERS} ${RES_FILES}) # QT
+# ELSE (WHEN NOT USING QT CREATOR)
+#add_library (RendererLib ${SOURCE}) # NON-QT
+
 add_executable (Renderer "${PROJECT_SOURCE_DIR}/src/main.cpp")
 target_link_libraries (Renderer RendererLib ${EXTRA_LIBS})
 

@@ -18,20 +18,11 @@ set(SOURCE
     PARENT_SCOPE
 )
 
-#set(HEADERS
-#    ${HEADERS}
-#    "${CMAKE_CURRENT_SOURCE_DIR}/intersections.cuh"
-#    "${CMAKE_CURRENT_SOURCE_DIR}/CudaFunctions.cuh"
-##testing
-#    "${CMAKE_CURRENT_SOURCE_DIR}/tester.cuh"
-#    PARENT_SCOPE
-#)
-
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -O3 -gencode arch=compute_30,code=sm_30")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --compiler-options -fno-strict-aliasing -use_fast_math")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --ptxas-options=-v")
 
-cuda_add_library(CudaLib STATIC ${CUDA_SOURCE})
+cuda_add_library(CudaLib ${CUDA_SOURCE})
 target_link_libraries(CudaLib ${CUDA_curand_LIBRARY})
 
 set(CUDA_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS} PARENT_SCOPE)

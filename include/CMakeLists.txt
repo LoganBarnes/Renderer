@@ -1,4 +1,5 @@
-
+# A list of all the header files so they show up
+# in the project tree when using Qt Creator
 if (USE_CUDA)
     set(HEADERS
         ${HEADERS}
