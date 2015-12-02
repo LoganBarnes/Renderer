@@ -6,9 +6,9 @@ set(SOURCE
 	PARENT_SCOPE
 )
 
-set(HEADERS
-        ${HEADERS}
-        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp.hpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/pathTracer.hpp"
-	PARENT_SCOPE
-)
+#set(HEADERS
+#        ${HEADERS}
+#        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp.hpp"
+#        "${CMAKE_CURRENT_SOURCE_DIR}/pathTracer.hpp"
+#	PARENT_SCOPE
+#)

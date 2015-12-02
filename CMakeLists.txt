@@ -18,21 +18,21 @@ set(RESOURCES_PATH "${PROJECT_SOURCE_DIR}/res")
 # to the source code
 configure_file (
         "${PROJECT_SOURCE_DIR}/src/renderer-config.hpp.in"
-        "${PROJECT_BINARY_DIR}/src/renderer-config.hpp"
+        "${PROJECT_BINARY_DIR}/include/renderer-config.hpp"
 )
 
 # add the binary tree to the search path for include files
 # so that we will find renderer-config.hpp
 include_directories (
-        "${PROJECT_BINARY_DIR}/src"
-        "${PROJECT_SOURCE_DIR}/src"
-        "${PROJECT_SOURCE_DIR}/src/application"
-        "${PROJECT_SOURCE_DIR}/src/shared"
-        "${PROJECT_SOURCE_DIR}/src/renderApp"
+        "${PROJECT_BINARY_DIR}/include"
+        "${PROJECT_SOURCE_DIR}/include"
+        "${PROJECT_SOURCE_DIR}/include/shared"
+        "${PROJECT_SOURCE_DIR}/include/renderApp"
+        # renderApp/graphics added later
 )
+# so headers show up in qt build tree
+add_subdirectory("${PROJECT_SOURCE_DIR}/include")
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/src/application")
-add_subdirectory("${PROJECT_SOURCE_DIR}/src/shared")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp")
 add_subdirectory("${PROJECT_SOURCE_DIR}/src/renderApp/graphics")
 
@@ -51,7 +51,7 @@ add_subdirectory("${RESOURCES_PATH}/shaders")
 include_directories("/usr/local/include/glm")
 
 if (USE_GRAPHICS)
-include_directories("${PROJECT_SOURCE_DIR}/src/renderApp/graphics")
+include_directories("${PROJECT_SOURCE_DIR}/include/renderApp/graphics")
 # add opengl functionality
 find_package(OpenGL REQUIRED)
 if (OPENGL_FOUND)
@@ -80,17 +80,17 @@ endif (USE_GRAPHICS)
 # create the cuda library
 if (USE_CUDA)
     find_package(CUDA REQUIRED)
-    include_directories("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
-    include_directories("${PROJECT_SOURCE_DIR}/src/CudaFunctions/cuHelpers")
+    include_directories("${PROJECT_SOURCE_DIR}/include/cuda")
+    include_directories("${PROJECT_SOURCE_DIR}/include/cuda/cuHelpers")
 
-    add_subdirectory("${PROJECT_SOURCE_DIR}/src/CudaFunctions")
+    add_subdirectory("${PROJECT_SOURCE_DIR}/src/cuda")
 
-    set (EXTRA_LIBS ${EXTRA_LIBS} CudaFunctions)
+    set (EXTRA_LIBS ${EXTRA_LIBS} CudaLib)
     include_directories("${CUDA_INCLUDE_DIRS}")
 
     # ignore warnings from 3rd party files
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${CUDA_INCLUDE_DIRS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/src/CudaFunctions/cuHelpers")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/include/cuda/cuHelpers")
 endif (USE_CUDA)
 
 # compile flags
@@ -103,7 +103,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wswitch-default -Wundef -Werror -Wno-un
 
 # make project into library that can be used by multiple executables (such as test classes)
 # RES_FILES is ignored by cmake but they show up in the build tree
-add_library (RendererLib ${SOURCE} ${HEADERS} ${RES_FILES})
+add_library (RendererLib STATIC ${SOURCE} ${HEADERS} ${RES_FILES})
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 add_executable (Renderer "${PROJECT_SOURCE_DIR}/src/main.cpp")

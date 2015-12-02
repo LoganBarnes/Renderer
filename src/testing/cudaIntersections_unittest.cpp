@@ -19,6 +19,7 @@ protected:
     IntersectionTest()
     {
         cuda_init(0, NULL, false);
+        // TODO: set rand seed?
     }
 
     virtual ~IntersectionTest()
@@ -227,36 +228,81 @@ TEST_F(IntersectionTest, SampleQuadNormalsCorrect)
 }
 
 
-///**
-// * @brief TEST_F
-// */
-//TEST_F(IntersectionTest, SampleQuadPredictsPI)
-//{
-//    const uint numSamples = 40000;
+/**
+ * @brief TEST_F
+ */
+TEST_F(IntersectionTest, SampleQuadPredictsPI)
+{
+    const uint numSamples = 50000;
 
-//    // allocate resources
-//    curandState *randState;
-//    cuda_allocateArray(reinterpret_cast<void**>(&randState), numSamples * sizeof(curandState));
-//    cuda_initCuRand(randState, 1337, dim3(numSamples, 1));
+    // allocate resources
+    curandState *randState;
+    cuda_allocateArray(reinterpret_cast<void**>(&randState), numSamples * sizeof(curandState));
+    cuda_initCuRand(randState, 1337, dim3(numSamples, 1));
 
-//    float3 *dResults; // first half contains points
-//    cuda_allocateArray(reinterpret_cast<void**>(&dResults), numSamples * sizeof(float3));
+    float3 *dResults; // first half contains points
+    cuda_allocateArray(reinterpret_cast<void**>(&dResults), numSamples * sizeof(float3));
 
-//    Shape *dShape;
-//    cuda_allocateArray(reinterpret_cast<void**>(&dShape), sizeof(Shape));
+    Shape *dShape;
+    cuda_allocateArray(reinterpret_cast<void**>(&dShape), sizeof(Shape));
 
 
-//    // set non-transformed test shape
-//    Shape hShape;
-//    hShape.type = QUAD;
-//    set_float_mat4(hShape.trans, glm::mat4());
-//    cuda_copyArrayToDevice(dShape, &hShape, 0, sizeof(Shape));
+    // set non-transformed test shape
+    Shape hShape;
+    hShape.type = QUAD;
+    set_float_mat4(hShape.trans, glm::mat4());
+    cuda_copyArrayToDevice(dShape, &hShape, 0, sizeof(Shape));
 
-//    // run test
-//    cuda_testSamplePoint(randState, dShape, dResults, numSamples, false);
+    // run test
+    cuda_testSamplePoint(randState, dShape, dResults, numSamples, false);
+
+    float3 hResults[numSamples];
+    cuda_copyArrayFromDevice(hResults, dResults, numSamples * sizeof(float3));
+
+    uint countIn = 0;
+    for (uint i = 0; i < numSamples; ++i)
+    {
+        float3 &f3 = hResults[i];
+        if (dot(f3, f3) < 1.f)
+            ++countIn;
+    }
+
+    float pi = static_cast<float>(countIn) * (4.f / static_cast<float>(numSamples));
+    EXPECT_NEAR(M_PI, pi, FLOAT_ERROR2);
+
+
+    // free resources
+    cuda_freeArray(dShape);
+    cuda_freeArray(dResults);
+    cuda_freeArray(randState);
+
+}
+
+
+/**
+ * @brief TEST_F
+ */
+TEST_F(IntersectionTest, SphereNormalsCorrect)
+{
+    // allocate resources
+    SurfaceElement *dSurfel; // first half contains points
+    cuda_allocateArray(reinterpret_cast<void**>(&dSurfel), sizeof(SurfaceElement));
+
+    Shape *dShape;
+    cuda_allocateArray(reinterpret_cast<void**>(&dShape), sizeof(Shape));
+
+
+    // set non-transformed test shape
+    Shape hShape;
+    hShape.type = QUAD;
+    set_float_mat4(hShape.trans, glm::mat4());
+    cuda_copyArrayToDevice(dShape, &hShape, 0, sizeof(Shape));
+
+    // run test
+//    cuda_testSamplePoint(randState, dShape, dSurfel, numSamples, false);
 
 //    float3 hResults[numSamples];
-//    cuda_copyArrayFromDevice(hResults, dResults, numSamples * sizeof(float3));
+//    cuda_copyArrayFromDevice(hResults, dSurfel, numSamples * sizeof(float3));
 
 //    uint countIn = 0;
 //    for (uint i = 0; i < numSamples; ++i)
@@ -270,12 +316,11 @@ TEST_F(IntersectionTest, SampleQuadNormalsCorrect)
 //    EXPECT_NEAR(M_PI, pi, FLOAT_ERROR2);
 
 
-//    // free resources
-//    cuda_freeArray(dShape);
-//    cuda_freeArray(dResults);
-//    cuda_freeArray(randState);
+    // free resources
+    cuda_freeArray(dShape);
+    cuda_freeArray(dSurfel);
 
-//}
+}
 
 
 } // namespace
