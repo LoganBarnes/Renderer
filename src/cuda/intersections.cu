@@ -87,12 +87,14 @@ extern "C"
     __device__
     float4 intersectQuad(float3 E, float3 D)
     {
-        float t = (-E.z) / D.z;
+        // norm = (0, 0, -1)
+        // t = dot((0, 0, 0) - E), norm) / dot(D, norm)
+        float t = E.z / (-D.z);
         float3 p = E + t * D;
         if (t < INF && t > 0.0)
         {
             if (p.x >= -1.0 && p.x <= 1.0 && p.y >= -1.0 && p.y <= 1.0)
-                return make_float4(0, 0, (D.z < 0.0 ? 1 : -1), t);
+                return make_float4(0, 0, -1, t);
         }
 
         return make_float4(0, 0, 0, INF);
@@ -100,13 +102,12 @@ extern "C"
 
     // check for intersections with every shape except the excluded one
     __device__
-    bool intersectWorld(Ray r, Shape *shapes, uint numShapes, SurfaceElement &surfel, int exclude)
+    bool intersectWorld(Ray *r, Shape *shapes, uint numShapes, SurfaceElement *surfel, int exclude)
     {
         float4 n = make_float4(INF);
         float4 tempN = make_float4(INF);
         Shape s;
-        int index = -1;
-
+        surfel->index = -1;
 
         for (int i = 0; i < MAX_DEVICE_SHAPES; ++i)
         {
@@ -118,8 +119,8 @@ extern "C"
 
             Shape &shape = shapes[i];
 
-            float3 E = make_float3(((float4 *)shape.inv) * make_float4(r.orig, 1.0));
-            float3 D = make_float3(((float4 *)shape.inv) * make_float4(r.dir, 0.0));
+            float3 E = make_float3(shape.inv * make_float4(r->orig, 1.0));
+            float3 D = make_float3(shape.inv * make_float4(r->dir, 0.0));
 
             // check bounding box first
 //            if (!intersectCubeQuick(E, D, INF))
@@ -159,7 +160,7 @@ extern "C"
                 if (tempN.w < n.w)
                 {
                     n = tempN;
-                    index = i;
+                    surfel->index = i;
                     s = shape;
                 }
                 break;
@@ -168,7 +169,7 @@ extern "C"
                 if (tempN.w < n.w)
                 {
                     n = tempN;
-                    index = i;
+                    surfel->index = i;
                     s = shape;
                 }
                 break;
@@ -183,21 +184,13 @@ extern "C"
 //            n.xyz = normalize(n.xyz);
 //        }
 
-        if (index >= 0)
+        if (surfel->index >= 0)
         {
-            surfel.point = r.orig + r.dir * n.w;
+            surfel->point = r->orig + r->dir * n.w;
+            surfel->normal = s.normInv * make_float3(n);
+//            surfel->normal = normalize(surfel->normal);
 
-            float3 mat3[3];
-            make_float_mat3(mat3, s.inv);
-            float3 transposed[3];
-            transpose_float_mat3(transposed, mat3);
-
-            surfel.normal = make_float3(n);
-            surfel.normal = transposed * normalize(surfel.normal);
-            surfel.normal = normalize(surfel.normal);
-
-            surfel.material = s.material;
-            surfel.index = s.index;
+            surfel->material = s.material;
 
             return true;
         }

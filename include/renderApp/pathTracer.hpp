@@ -32,7 +32,7 @@ public:
     void unregisterTexture(const char *name);
 
     void addShape(ShapeType type, glm::mat4 trans, glm::vec3 color);
-    void addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 radiance);
+    void addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 power, float area);
 
     void setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv);
     void tracePath(const char *writeTex, GLuint width, GLuint height);

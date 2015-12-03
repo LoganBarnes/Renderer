@@ -11,7 +11,7 @@ __device__ const bool DIRECT = true;
 __device__ const bool INDIRECT = true;
 
 __device__ const float BUMP_VAL = 0.0001f;
-//__device__ const float PI_F = 3.141592653539f;
+__device__ const float PI_F = 3.141592653539f;
 
 extern "C"
 {
@@ -25,8 +25,8 @@ extern "C"
      * @return
      */
     __device__
-    Radiance3 estimateDirectLightFromAreaLights(SurfaceElement surfel,
-                                                Ray ray,
+    Radiance3 estimateDirectLightFromAreaLights(SurfaceElement *surfel,
+                                                Ray *ray,
                                                 Shape *shapes,
                                                 uint numShapes,
                                                 Shape *areaLights,
@@ -39,22 +39,24 @@ extern "C"
         for (uint l = 0; l < numAreaLights; ++l)
         {
             SurfaceElement lightSurfel = samplePoint(randState, id, areaLights[l]);
+//            printf("(%1.2f, %1.2f, %1.2f)", lightSurfel.point.x, lightSurfel.point.y, lightSurfel.point.z);
 
             Ray r;
-            r.orig = surfel.point + surfel.normal * BUMP_VAL;
-            r.dir = normalize(lightSurfel.point - r.orig);
+            r.orig = surfel->point + surfel->normal * BUMP_VAL;
+            r.dir = normalize((lightSurfel.point + lightSurfel.normal * BUMP_VAL) - r.orig);
             SurfaceElement intersection;
-            if (intersectWorld(r, shapes, numShapes, intersection, surfel.index) &&
-                    intersection.index == lightSurfel.index)
+            if (intersectWorld(&r, shapes, numShapes, &intersection, -1))// &&
+//                    intersection.index == lightSurfel.index)
             {
-                float3 w_i = lightSurfel.point - surfel.point;
+//                printf("%d", intersection.index);
+                float3 w_i = lightSurfel.point - surfel->point;
                 const float distance2 = dot(w_i, w_i);
                 w_i /= sqrt(distance2);
 
-                L_o += surfel.material.color ;//* // should calc BDSF
-//                        (lightSurfel.material.emitted / PI_F) *
-//                        max(0.f, dot(w_i, surfel.normal)) *
-//                        max(0.f, dot(-w_i, lightSurfel.normal / distance2));
+                L_o += surfel->material.color * // should calc BDSF
+                        (lightSurfel.material.power / PI_F) *
+                        max(0.f, dot(w_i, surfel->normal)) *
+                        max(0.f, dot(-w_i, lightSurfel.normal / distance2));
             }
         }
 
@@ -74,7 +76,7 @@ extern "C"
      * @return
      */
     __device__
-    Radiance3 pathTrace(Ray &ray,
+    Radiance3 pathTrace(Ray *ray,
                         float &coeff,
                         Shape *shapes,
                         uint numShapes,
@@ -87,14 +89,14 @@ extern "C"
         Radiance3 L_o = make_float3(0.f);
 
         SurfaceElement surfel;
-        if (intersectWorld(ray, shapes, numShapes, surfel, -1))
+        if (intersectWorld(ray, shapes, numShapes, &surfel, -1))
         {
             if (isEyeRay && EMIT)
                 L_o += coeff * surfel.material.emitted;
 
             if (!isEyeRay || DIRECT)
             {
-                L_o += coeff * estimateDirectLightFromAreaLights(surfel,
+                L_o += coeff * estimateDirectLightFromAreaLights(&surfel,
                                                                  ray,
                                                                  shapes,
                                                                  numShapes,
@@ -107,13 +109,13 @@ extern "C"
             if (!isEyeRay || INDIRECT)
             {
                 // TODO: indirect illumination
-                ray.isValid = false;
+                ray->isValid = false;
             }
 
-            L_o += coeff * surfel.material.color;
+//            L_o += coeff * surfel.material.color;
         }
         else
-            ray.isValid = false;
+            ray->isValid = false;
 
         return L_o;
     }
@@ -168,7 +170,7 @@ extern "C"
 
             while (ray.isValid)
             {
-                radiance += pathTrace(ray,
+                radiance += pathTrace(&ray,
                                       coeff,
                                       shapes,
                                       numShapes,

@@ -118,9 +118,12 @@ void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec3 color)
     shape.type = type;
 #ifdef USE_CUDA
     glm::mat4 inv = glm::inverse(trans);
-    set_float_mat4(shape.trans, inv);
+    glm::mat3 normInv = glm::inverse(glm::transpose(glm::mat3(trans)));
+    set_float_mat4(shape.trans, trans);
     set_float_mat4(shape.inv, inv);
+    set_float_mat3(shape.normInv, normInv);
     shape.material.color = make_float3(color.x, color.y, color.z);
+    shape.material.power = make_float3(0.f);
     shape.material.emitted = make_float3(0.f);
     shape.index = m_numShapes;
 
@@ -134,7 +137,7 @@ void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec3 color)
 }
 
 
-void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 radiance)
+void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 power, float area)
 {
     if (m_numShapes >= MAX_DEVICE_SHAPES ||
             m_numAreaLights >= MAX_DEVICE_AREA_LIGHTS)
@@ -144,10 +147,13 @@ void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 radianc
     shape.type = type;
 #ifdef USE_CUDA
     glm::mat4 inv = glm::inverse(trans);
-    set_float_mat4(shape.trans, inv);
+    glm::mat3 normInv = glm::inverse(glm::transpose(glm::mat3(trans)));
+    set_float_mat4(shape.trans, trans);
     set_float_mat4(shape.inv, inv);
+    set_float_mat3(shape.normInv, normInv);
     shape.material.color = make_float3(0.f);
-    shape.material.emitted = make_float3(radiance.r, radiance.g, radiance.b);
+    shape.material.power = make_float3(power.x, power.y, power.z);
+    shape.material.emitted = shape.material.power / (M_PI * area);
     shape.index = m_numShapes;
 
     cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
@@ -167,8 +173,8 @@ void PathTracer::setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv)
 {
 //    glm::mat4 scaleViewInvT = glm::transpose(scaleViewInv);
 #ifdef USE_CUDA
-    cuda_copyArrayToDevice(m_dScaleViewInvEye, glm::value_ptr(scaleViewInv), 0, 16*sizeof(float));
-    cuda_copyArrayToDevice(m_dScaleViewInvEye, glm::value_ptr(eye), 16*sizeof(float), 4*sizeof(float));
+    cuda_copyArrayToDevice(m_dScaleViewInvEye, glm::value_ptr(scaleViewInv), 0, 16 * sizeof(float));
+    cuda_copyArrayToDevice(m_dScaleViewInvEye, glm::value_ptr(eye), 16*sizeof(float), 4 * sizeof(float));
 #else
     m_hScaleViewInv = scaleViewInv;
     m_hEye = eye;

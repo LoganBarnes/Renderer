@@ -4,7 +4,10 @@
 #include <curand_kernel.h>
 
 typedef unsigned int uint;
+
 struct Shape;
+struct SurfaceElement;
+struct Ray;
 
 extern "C"
 {
@@ -13,6 +16,8 @@ extern "C"
                               float3 *results,
                               uint numResults,
                               bool useNormals);
+
+    void cuda_testSphereIntersect(Shape *shape, SurfaceElement *surfel, Ray *ray);
 }
 
 #endif // TESTER_CUH

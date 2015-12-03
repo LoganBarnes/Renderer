@@ -113,48 +113,57 @@ int RenderApp::_runLoop()
 
 void RenderApp::_buildScene()
 {
+    // 0: right (green) wall
     glm::mat4 trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(-2.5f, 0.f, -1.5f));
-    trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
+    trans *= glm::rotate(glm::mat4(), glm::radians(-90.f), glm::vec3(0.f, 1.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.f, 2.5f, 1.f));
     m_pathTracer->addShape(QUAD, trans, glm::vec3(0.8f, 0.f, 0.f));
 
+    // 1: left (red) wall
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(2.5f, 0.f, -1.5f));
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.f, 2.5f, 1.f));
     m_pathTracer->addShape(QUAD, trans, glm::vec3(0.f, 0.8f, 0.f));
 
+    // 2: ceiling
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 2.5f, -1.5f));
-    trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
+    trans *= glm::rotate(glm::mat4(), glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.001f, 1.f));
     m_pathTracer->addShape(QUAD, trans, glm::vec3(0.8f, 0.8f, 0.8f));
 
+    // 3: floor
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(0.f, -2.5f, -1.5f));
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.001f, 1.f));
     m_pathTracer->addShape(QUAD, trans, glm::vec3(0.8f, 0.8f, 0.8f));
 
+    // 4: back wall
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 0.f, -3.5f));
+    trans *= glm::rotate(glm::mat4(), glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.501f, 1.f));
     m_pathTracer->addShape(QUAD, trans, glm::vec3(0.8f, 0.8f, 0.8f));
 
+    // 5: close sphere
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(1.f, -1.5f, -0.5f));
     m_pathTracer->addShape(SPHERE, trans, glm::vec3(1.f));
 
+    // 6: far sphere
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(-1.f, -1.5f, -2.5f));
     m_pathTracer->addShape(SPHERE, trans, glm::vec3(1.f));
 
+    // 7: light
     trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 2.49f, -1.5f));
-    trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 2.475f, -1.5f));
+    trans *= glm::rotate(glm::mat4(), glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(0.5f, 0.3, 1.f));
-    m_pathTracer->addAreaLight(QUAD, trans, glm::vec3(4.f));
+    m_pathTracer->addAreaLight(QUAD, trans, glm::vec3(60.f), 0.5f * 0.3f);
 }
 
 

@@ -23,6 +23,18 @@ inline __host__ __device__ void set_float_mat4(float4 *mat4, glm::mat4 otherMat)
 /*
  * Matrix initializer. Matrix stored in column major order.
  */
+inline __host__ __device__ void set_float_mat3(float3 *mat3, glm::mat3 otherMat)
+{
+    for (int c = 0; c < 3; ++c)
+    {
+        mat3[c] = make_float3(otherMat[c][0], otherMat[c][1], otherMat[c][2]);
+    }
+}
+
+
+/*
+ * Matrix initializer. Matrix stored in column major order.
+ */
 inline __host__ __device__ void make_float_mat3(float3 *mat3, float4 *mat4)
 {
     mat3[0] = make_float3(mat4[0]);
@@ -84,6 +96,7 @@ struct Ray
 struct Material
 {
     float3 color;
+    float3 power;
     Radiance3 emitted;
 };
 
@@ -98,8 +111,9 @@ struct SurfaceElement
 struct Shape
 {
     ShapeType type;
-    float4 trans[16];
-    float4 inv[16];
+    float4 trans[4];
+    float4 inv[4];
+    float3 normInv[3];
     Material material;
     uint index;
 };

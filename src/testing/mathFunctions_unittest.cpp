@@ -29,21 +29,32 @@ TEST_F(MathTest, MakeMatMimicsGLMMat)
     using ::testing::ElementsAreArray;
     using ::testing::Pointwise;
 
+    std::srand(std::time(0));
+
     // integers
-    glm::mat4 glmMat4 = glm::mat4(rand(), rand(), rand(), rand(),
-                                  rand(), rand(), rand(), rand(),
-                                  rand(), rand(), rand(), rand(),
-                                  rand(), rand(), rand(), rand());
+    glm::mat4 glmMat4 = glm::mat4(std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand());
+    glm::mat3 glmMat3 = glm::mat3(glmMat4);
     float4 myMat4[4];
     set_float_mat4(myMat4, glmMat4);
+    float3 myMat3[3];
+    set_float_mat3(myMat3, glmMat3);
 
     float *glm4Ptr = glm::value_ptr(glmMat4);
     float *my4Ptr = reinterpret_cast<float*>(myMat4);
+    float *glm3Ptr = glm::value_ptr(glmMat3);
+    float *my3Ptr = reinterpret_cast<float*>(myMat3);
 
     // convert to vectors for comparison
     std::vector<float> glmInt4Vector(glm4Ptr, glm4Ptr + 16);
     std::vector<float> myInt4Vector(my4Ptr, my4Ptr + 16);
-    EXPECT_THAT(glmInt4Vector, Pointwise(FloatEq(FLOAT_ERROR_PRECISE), myInt4Vector));
+    EXPECT_THAT(myInt4Vector, Pointwise(FloatEq(FLOAT_ERROR_PRECISE), glmInt4Vector));
+    // convert to vectors for comparison
+    std::vector<float> glmInt3Vector(glm3Ptr, glm3Ptr + 9);
+    std::vector<float> myInt3Vector(my3Ptr, my3Ptr + 9);
+    EXPECT_THAT(myInt3Vector, Pointwise(FloatEq(FLOAT_ERROR_PRECISE), glmInt3Vector));
 
 
 
@@ -58,12 +69,11 @@ TEST_F(MathTest, MakeMatMimicsGLMMat)
 
 
     // convert to mat3
-    glm::mat3 glmMat3 = glm::mat3(glmMat4);
-    float3 myMat3[3];
+    glmMat3 = glm::mat3(glmMat4);
     make_float_mat3(myMat3, myMat4);
 
-    float *glm3Ptr = glm::value_ptr(glmMat3);
-    float *my3Ptr = reinterpret_cast<float*>(myMat3);
+    glm3Ptr = glm::value_ptr(glmMat3);
+    my3Ptr = reinterpret_cast<float*>(myMat3);
 
     // convert to vectors for comparison
     std::vector<float> glmFloat3Vector(glm3Ptr, glm3Ptr + 9);
@@ -87,10 +97,10 @@ TEST_F(MathTest, MatrixVectorMult4EqualsGLMMatrixVectorMult4)
     float4 myResults[numTestVecs];
 
     // matrices to multiply
-    glm::mat4 glmMat4 = glm::mat4(rand(), rand(), rand(), rand(),
-                                  rand(), rand(), rand(), rand(),
-                                  rand(), rand(), rand(), rand(),
-                                  rand(), rand(), rand(), rand());
+    glm::mat4 glmMat4 = glm::mat4(std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand());
     glmMat4 *= 1.f / static_cast<float>(RAND_MAX);
     float4 myMat4[4];
     set_float_mat4(myMat4, glmMat4);
@@ -101,10 +111,10 @@ TEST_F(MathTest, MatrixVectorMult4EqualsGLMMatrixVectorMult4)
     float x, y, z, w;
     for (int i = 0; i < numTestVecs; ++i)
     {
-        x = rand() * invMax;
-        y = rand() * invMax;
-        z = rand() * invMax;
-        w = rand() * invMax;
+        x = std::rand() * invMax;
+        y = std::rand() * invMax;
+        z = std::rand() * invMax;
+        w = std::rand() * invMax;
 
         glmResults[i] = glmMat4 * glm::vec4(x, y, z, w);
         myResults[i] = myMat4 * make_float4(x, y, z, w);
@@ -135,10 +145,10 @@ TEST_F(MathTest, MatrixVectorMult3EqualsGLMMatrixVectorMult3)
     float3 myResults[numTestVecs];
 
     // matrices to multiply
-    glm::mat4 glmMat4 = glm::mat4(rand(), rand(), rand(), rand(),
-                                  rand(), rand(), rand(), rand(),
-                                  rand(), rand(), rand(), rand(),
-                                  rand(), rand(), rand(), rand());
+    glm::mat4 glmMat4 = glm::mat4(std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand());
     glmMat4 *= 1.f / static_cast<float>(RAND_MAX);
     float4 myMat4[4];
     float3 myMat3[3];
@@ -152,9 +162,9 @@ TEST_F(MathTest, MatrixVectorMult3EqualsGLMMatrixVectorMult3)
     float x, y, z;
     for (int i = 0; i < numTestVecs; ++i)
     {
-        x = rand() * invMax;
-        y = rand() * invMax;
-        z = rand() * invMax;
+        x = std::rand() * invMax;
+        y = std::rand() * invMax;
+        z = std::rand() * invMax;
 
         glmResults[i] = glmMat3 * glm::vec3(x, y, z);
         myResults[i] = myMat3 * make_float3(x, y, z);
