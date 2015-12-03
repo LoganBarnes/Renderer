@@ -172,9 +172,10 @@ void GraphicsHandler::renderBuffer(const char* buffer, int verts, GLenum mode)
 }
 
 
-void GraphicsHandler::render(const char *program, const char *buffer, int verts, GLenum mode, const char *texture)
+void GraphicsHandler::render(const char *program, const char *buffer, int verts, GLenum mode, const char *texture, bool clear)
 {
-    this->clearWindow();
+    if (clear)
+        this->clearWindow();
     this->useProgram(program);
     if (texture)
         this->setTexture(program, texture);
@@ -204,9 +205,34 @@ void GraphicsHandler::setBoolUniform(const char *program, const char *uniform, b
 }
 
 
+void GraphicsHandler::setBlending(bool blend)
+{
+    if (blend)
+    {
+        glEnable(GL_BLEND);
+        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+//        glBlendFuncSeparate(ßGL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+    } else
+        glDisable(GL_BLEND);
+}
+
+
+void GraphicsHandler::setWindowShouldClose(bool close)
+{
+    glfwSetWindowShouldClose(m_window, static_cast<int>(close));
+}
+
+
 bool GraphicsHandler::checkWindowShouldClose()
 {
     return glfwWindowShouldClose(m_window);
+}
+
+
+double GraphicsHandler::getTime()
+{
+    return glfwGetTime();
 }
 
 

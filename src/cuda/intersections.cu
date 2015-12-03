@@ -178,17 +178,11 @@ extern "C"
             }
         }
 
-//        if (index >= 0)
-//        {
-//            n.xyz = mat3(transpose(s.inv)) * normalize(n.xyz);
-//            n.xyz = normalize(n.xyz);
-//        }
 
         if (surfel->index >= 0)
         {
             surfel->point = r->orig + r->dir * n.w;
-            surfel->normal = s.normInv * make_float3(n);
-//            surfel->normal = normalize(surfel->normal);
+            surfel->normal = normalize(s.normInv * normalize(make_float3(n)));
 
             surfel->material = s.material;
 

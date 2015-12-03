@@ -45,7 +45,7 @@ extern "C"
 
 //            surfel.point = make_float3(shape.trans * make_float4(0.f, 0.f, 0.f, 1.f));
             surfel.point = make_float3(shape.trans * make_float4(x, y, 0.f, 1.f));
-            surfel.normal = shape.normInv * make_float3(0.f, 0.f, -1.f);
+            surfel.normal = normalize(shape.normInv * make_float3(0.f, 0.f, -1.f));
             surfel.material = shape.material;
             surfel.index = static_cast<int>(shape.index);
         }

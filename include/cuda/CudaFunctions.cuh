@@ -49,7 +49,8 @@ extern "C"
                         Shape *areaLights,
                         uint numAreaLights,
                         dim3 texDim,
-                        curandState *randState);
+                        curandState *randState,
+                        uint iteration);
 
     /*
      * from 'random.cu'

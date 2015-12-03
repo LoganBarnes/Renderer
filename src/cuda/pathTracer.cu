@@ -10,7 +10,7 @@ __device__ const bool EMIT = true;
 __device__ const bool DIRECT = true;
 __device__ const bool INDIRECT = true;
 
-__device__ const float BUMP_VAL = 0.0001f;
+__device__ const float BUMP_VAL = 0.001f;
 __device__ const float PI_F = 3.141592653539f;
 
 extern "C"
@@ -39,16 +39,14 @@ extern "C"
         for (uint l = 0; l < numAreaLights; ++l)
         {
             SurfaceElement lightSurfel = samplePoint(randState, id, areaLights[l]);
-//            printf("(%1.2f, %1.2f, %1.2f)", lightSurfel.point.x, lightSurfel.point.y, lightSurfel.point.z);
 
             Ray r;
             r.orig = surfel->point + surfel->normal * BUMP_VAL;
             r.dir = normalize((lightSurfel.point + lightSurfel.normal * BUMP_VAL) - r.orig);
             SurfaceElement intersection;
-            if (intersectWorld(&r, shapes, numShapes, &intersection, -1))// &&
-//                    intersection.index == lightSurfel.index)
+            if (intersectWorld(&r, shapes, numShapes, &intersection, -1) &&
+                    intersection.index == lightSurfel.index)
             {
-//                printf("%d", intersection.index);
                 float3 w_i = lightSurfel.point - surfel->point;
                 const float distance2 = dot(w_i, w_i);
                 w_i /= sqrt(distance2);
@@ -59,6 +57,19 @@ extern "C"
                         max(0.f, dot(-w_i, lightSurfel.normal / distance2));
             }
         }
+//        SurfaceElement lightSurfel;
+//        lightSurfel.point = make_float3(0.f, 2.475f, -1.5f);
+//        lightSurfel.normal = make_float3(0.f, -1.f, 0.f);
+//        lightSurfel.material.power = make_float3(60.f);
+
+//        float3 w_i = lightSurfel.point - surfel->point;
+//        const float distance2 = dot(w_i, w_i);
+//        w_i /= sqrt(distance2);
+
+//        L_o = surfel->material.color * // should calc BDSF
+//                (lightSurfel.material.power / PI_F) *
+//                max(0.f, dot(w_i, surfel->normal)) *
+//                max(0.f, dot(-w_i, lightSurfel.normal / distance2));
 
         return L_o;
     }
@@ -104,7 +115,51 @@ extern "C"
                                                                  numAreaLights,
                                                                  randState,
                                                                  id);
-            }
+////                for (uint l = 0; l < 1; ++l)
+//                {
+//        //            SurfaceElement lightSurfel = samplePoint(randState, id, areaLights[l]);
+//                    SurfaceElement lightSurfel;
+////                    float x = curand_uniform(randState + id);
+////                    float y = curand_uniform(randState + id);
+////                    float x = 0.f;
+////                    float y = x;
+////                    x = x * 1.99999f - 1.f;
+////                    y = y * 1.99999f - 1.f;
+
+//                    Shape &shape = areaLights[0];
+
+//                    lightSurfel.point = make_float3(shape.trans * make_float4(0.f, 0.f, 0.f, 1.f));
+////                    lightSurfel.point = make_float3(shape.trans * make_float4(x, y, 0.f, 1.f));
+//                    lightSurfel.normal = normalize(shape.normInv * make_float3(0.f, 0.f, -1.f));
+//                    lightSurfel.material = shape.material;
+//                    lightSurfel.index = static_cast<int>(shape.index);
+
+////                    lightSurfel.index = 7;
+////                    lightSurfel.point = make_float3(0.f, 2.475f, -1.5f);
+////                    lightSurfel.normal = make_float3(0.f, -1.f, 0.f);
+////                    lightSurfel.material.power = make_float3(60.f);
+
+////                    printf("[P:](%1.2f, %1.2f, %1.2f)", lightSurfel.point.x, lightSurfel.point.y, lightSurfel.point.z);
+////                    printf("[N:](%1.2f, %1.2f, %1.2f)", lightSurfel.normal.x, lightSurfel.normal.y, lightSurfel.normal.z);
+
+//                    Ray r;
+//                    r.orig = surfel.point + surfel.normal * BUMP_VAL;
+//                    r.dir = normalize((lightSurfel.point + lightSurfel.normal * BUMP_VAL) - r.orig);
+//                    SurfaceElement intersection;
+//                    if (intersectWorld(&r, shapes, numShapes, &intersection, -1) &&
+//                            intersection.index == lightSurfel.index)
+//                    {
+//                        float3 w_i = lightSurfel.point - surfel.point;
+//                        const float distance2 = dot(w_i, w_i);
+//                        w_i /= sqrt(distance2);
+
+//                        L_o += surfel.material.color * // should calc BDSF
+//                                (lightSurfel.material.power / PI_F) *
+//                                max(0.f, dot(w_i, surfel.normal)) *
+//                                max(0.f, dot(-w_i, lightSurfel.normal / distance2));
+//                    }
+//                }
+            } // end DIRECT
 
             if (!isEyeRay || INDIRECT)
             {
@@ -140,7 +195,8 @@ extern "C"
                           Shape *areaLights,
                           uint numAreaLights,
                           dim3 texDim,
-                          curandState *randState)
+                          curandState *randState,
+                          uint iteration)
     {
         // Calculate surface coordinates
         uint x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -181,12 +237,15 @@ extern "C"
                                       id);
             }
 
-//            // Temp randomness
-//            float3 randomness = randCosHemi(randState, id);
-//            radiance *= randomness;
-
             float scale = 1.f;
+//            float4 result = make_float4(radiance * (1.f / scale), 1.f / static_cast<float>(iteration / 2));
             float4 result = make_float4(radiance * (1.f / scale), 1.f);
+            clamp(result, 0.f, 1.f);
+
+            // nans?
+            result.x = result.x != result.x ? 0.f : result.x;
+            result.y = result.y != result.y ? 0.f : result.y;
+            result.z = result.z != result.z ? 0.f : result.z;
 
             // Write to output surface
             surf2Dwrite(result, surfObj, x * sizeof(float4), y);
@@ -213,7 +272,8 @@ extern "C"
                         Shape *areaLights,
                         uint numAreaLights,
                         dim3 texDim,
-                        curandState *randState)
+                        curandState *randState,
+                        uint iteration)
     {
         dim3 thread(32, 32);
         dim3 block(1);
@@ -227,6 +287,7 @@ extern "C"
                                               areaLights,
                                               numAreaLights,
                                               texDim,
-                                              randState);
+                                              randState,
+                                              iteration);
     }
 }

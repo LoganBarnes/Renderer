@@ -19,7 +19,9 @@ const int DEFAULT_HEIGHT = 480;
 RenderApp::RenderApp()
     : m_graphics(NULL),
       m_pathTracer(NULL),
-      m_camera(NULL)
+      m_camera(NULL),
+      m_loopFPS(60.0),
+      m_iterationWithoutClear(2)
 {
 #ifdef USE_GRAPHICS
     m_graphics = new GraphicsHandler(DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -64,6 +66,8 @@ int RenderApp::execute(int argc, const char **argv)
                 static_cast<float>(DEFAULT_WIDTH) /
                 static_cast<float>(DEFAULT_HEIGHT));
 
+//    m_graphics->setBlending(true);
+
 #endif
     m_pathTracer->init(argc, argv, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
@@ -80,35 +84,36 @@ int RenderApp::execute(int argc, const char **argv)
 
 int RenderApp::_runLoop()
 {
+    uint counterMax = 100000000;
+    uint counter = counterMax + 1;
 #ifdef USE_GRAPHICS
+    m_iterationWithoutClear = 2;
+
     while (!m_graphics->checkWindowShouldClose())
     {
-        m_pathTracer->tracePath("tex", DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        m_graphics->render("default", "fullscreen", 4, GL_TRIANGLE_STRIP, "tex");
-        m_graphics->updateWindow();
+        if (counter > counterMax)
+        {
+            if (m_iterationWithoutClear < 4)
+            {
+                m_pathTracer->tracePath("tex", DEFAULT_WIDTH, DEFAULT_HEIGHT, m_iterationWithoutClear);
+                m_graphics->render("default", "fullscreen", 4, GL_TRIANGLE_STRIP, "tex");
+                m_graphics->updateWindow();
+            }
+            else
+            {
+                m_pathTracer->tracePath("tex", DEFAULT_WIDTH, DEFAULT_HEIGHT, m_iterationWithoutClear);
+                m_graphics->render("default", "fullscreen", 4, GL_TRIANGLE_STRIP, "tex", false);
+                m_graphics->updateWindow();
+            }
+            ++m_iterationWithoutClear;
+            counter = 0;
+        }
+        ++counter;
     }
 #endif
 
     return 0;
 }
-
-
-//void RenderApp::update(double)
-//{
-//    m_pathTracer->tracePath("tex", DEFAULT_WIDTH, DEFAULT_HEIGHT);
-//}
-
-
-//void RenderApp::handleKeyInput()
-//{
-
-//}
-
-
-//void RenderApp::render(int)
-//{
-//    m_graphics->render("default", "fullscreen", 4, GL_TRIANGLE_STRIP, "tex");
-//}
 
 
 void RenderApp::_buildScene()
@@ -165,5 +170,6 @@ void RenderApp::_buildScene()
     trans *= glm::scale(glm::mat4(), glm::vec3(0.5f, 0.3, 1.f));
     m_pathTracer->addAreaLight(QUAD, trans, glm::vec3(60.f), 0.5f * 0.3f);
 }
+
 
 

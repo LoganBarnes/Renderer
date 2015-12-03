@@ -42,7 +42,7 @@ public:
 
     void addUVBuffer(const char *buffer, const char *program, GLfloat *data, GLuint size, bool dynamic = false);
 
-    void render(const char *program, const char *buffer, int verts, GLenum mode, const char *texture);
+    void render(const char *program, const char *buffer, int verts, GLenum mode, const char *texture, bool clear = true);
     void clearWindow();
     void useProgram(const char *program);
     void setTexture(const char *program, const char *texture);
@@ -52,7 +52,11 @@ public:
     void setBoolUniform(const char *program, const char *uniform, bool var);
     void setBuffer(const char *bufferName, float *data, GLuint size);
 
+    void setBlending(bool blend);
+
+    void setWindowShouldClose(bool close);
     bool checkWindowShouldClose();
+    double getTime();
     void resize(GLsizei width, GLsizei height);
 
 
