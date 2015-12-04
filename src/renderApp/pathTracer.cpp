@@ -230,7 +230,6 @@ void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height)
     cuda_destroySurfaceObject(surface);
     cuda_graphicsUnmapResource(&res);
     cuda_streamSynchronize(0);
-    cuda_deviceSynchronize();
 }
 
 #else

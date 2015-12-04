@@ -52,7 +52,7 @@ extern "C"
             if (r < 0.f)
             {
                 *weight_o = material.lambertianReflect / p_lambertianAvg;
-                *w_o = randHemi(surfel->normal, randState, id);
+                *w_o = randCosHemi(surfel->normal, randState, id);
                 *eta_o = material.etaPos;
 
                 return true;
@@ -94,7 +94,7 @@ extern "C"
             if (dot(surfel->normal, w_o) < 0.f)
             {
                 bump = -bump;
-                printf("neg bump ");
+//                printf("neg bump ");
             }
             ray->orig = surfel->point + surfel->normal * bump;
             ray->dir = w_o;
