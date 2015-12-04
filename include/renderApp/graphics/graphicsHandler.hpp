@@ -20,13 +20,11 @@ struct Buffer
     GLuint vao;
 };
 
-class Camera;
-
 class GraphicsHandler
 {
 
 public:
-    explicit GraphicsHandler(GLsizei width = 640, GLsizei height = 480, Camera *camera = NULL);
+    explicit GraphicsHandler(GLsizei width = 640, GLsizei height = 480);
     virtual ~GraphicsHandler();
 
     bool init(std::string title = "Window", GLFWerrorfun errorCallback = NULL, GLFWkeyfun keyCallback = NULL);
@@ -88,8 +86,6 @@ private:
     std::unordered_map <const char*, Buffer> m_framebuffers;
 
     GLsizei m_viewportWidth, m_viewportHeight;
-
-    Camera *m_camera;
 
     bool m_initialized;
 

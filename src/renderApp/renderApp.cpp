@@ -34,8 +34,8 @@ RenderApp::RenderApp()
       m_iterationWithoutClear(2)
 {
 #ifdef USE_GRAPHICS
+    m_graphics = new GraphicsHandler(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     m_camera = new Camera();
-    m_graphics = new GraphicsHandler(DEFAULT_WIDTH, DEFAULT_HEIGHT, m_camera);
 #endif
     m_pathTracer = new PathTracer();
 }

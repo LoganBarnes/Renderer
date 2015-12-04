@@ -8,14 +8,12 @@
 #include <vector>
 #include <algorithm>
 #include "graphicsHandler.hpp"
-#include "camera.hpp"
 
 
-GraphicsHandler::GraphicsHandler(GLsizei width, GLsizei height, Camera *camera)
+GraphicsHandler::GraphicsHandler(GLsizei width, GLsizei height)
     : m_window(NULL),
       m_viewportWidth(width),
       m_viewportHeight(height),
-      m_camera(camera),
       m_initialized(false)
 {}
 
