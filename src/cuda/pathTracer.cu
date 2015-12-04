@@ -1,6 +1,6 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
-#include "helper_cuda.h" // includes helper_math.h
+#include "helper_cuda.h"
 #include "helper_grid.h"
 #include "renderObjects.hpp"
 #include "intersections.cu"
@@ -8,6 +8,7 @@
 
 __device__ const bool EMIT = true;
 __device__ const bool DIRECT = true;
+__device__ const bool DIRECT_SPEC = false;
 __device__ const bool INDIRECT = true;
 
 __device__ const float BUMP_VAL = 0.001f;
@@ -15,6 +16,95 @@ __device__ const float PI_F = 3.141592653539f;
 
 extern "C"
 {
+
+    /**
+     * @brief scatter
+     * @param surfel
+     * @param w_i
+     * @param w_o
+     * @param weight_o
+     * @param eta_o
+     * @param extinction_o
+     * @param randState
+     * @param id
+     * @return
+     */
+    __device__
+    bool scatter(SurfaceElement *surfel,
+                 const float3 &w_i,
+                 float3 *w_o,
+                 Radiance3 *weight_o,
+                 float *eta_o,
+                 curandState *randState,
+                 int id)
+    {
+//        const float3 &n = surfel->normal;
+
+        float r = curand_uniform(randState + id);
+
+        Material &material = surfel->material;
+        if (dot(material.lambertianReflect, material.lambertianReflect) > 1e-7)
+        {
+            float3 &lambRefl = material.lambertianReflect;
+            float p_lambertianAvg = (lambRefl.x + lambRefl.y + lambRefl.z) / 3.f;
+            r -= p_lambertianAvg;
+
+            if (r < 0.f)
+            {
+                *weight_o = material.lambertianReflect / p_lambertianAvg;
+                *w_o = randHemi(surfel->normal, randState, id);
+                *eta_o = material.etaPos;
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @brief estimateIndirectLight
+     * @param surfel
+     * @param ray
+     * @param shapes
+     * @param numShapes
+     * @param randState
+     * @param id
+     * @return
+     */
+    __device__
+    float3 estimateIndirectLight(SurfaceElement *surfel,
+                                    Ray *ray,
+                                    curandState *randState,
+                                    int id)
+    {
+        float3 w_i = -ray->dir;
+        float3 w_o;
+        float3 coeff = make_float3(0.f);
+        float eta_o = 0.f;
+
+        if (scatter(surfel, w_i, &w_o, &coeff, &eta_o, randState, id))
+        {
+            float eta_i = surfel->material.etaPos;
+            float refractiveScale = eta_i / eta_o;
+            refractiveScale *= refractiveScale;
+
+            coeff *= refractiveScale;
+            float bump = BUMP_VAL;
+            if (dot(surfel->normal, w_o) < 0.f)
+            {
+                bump = -bump;
+                printf("neg bump ");
+            }
+            ray->orig = surfel->point + surfel->normal * bump;
+            ray->dir = w_o;
+        }
+        else
+            ray->isValid = false;
+
+        return coeff;
+    }
+
 
     /**
      * @brief estimateDirectLightFromAreaLights
@@ -25,8 +115,7 @@ extern "C"
      * @return
      */
     __device__
-    Radiance3 estimateDirectLightFromAreaLights(SurfaceElement *surfel,
-                                                Ray *ray,
+    float3 estimateDirectLightFromAreaLights(SurfaceElement *surfel,
                                                 Shape *shapes,
                                                 uint numShapes,
                                                 Shape *areaLights,
@@ -56,20 +145,11 @@ extern "C"
                         max(0.f, dot(w_i, surfel->normal)) *
                         max(0.f, dot(-w_i, lightSurfel.normal / distance2));
             }
+            if (DIRECT_SPEC)
+            {
+                // TODO: implement impulses (specular)
+            }
         }
-//        SurfaceElement lightSurfel;
-//        lightSurfel.point = make_float3(0.f, 2.475f, -1.5f);
-//        lightSurfel.normal = make_float3(0.f, -1.f, 0.f);
-//        lightSurfel.material.power = make_float3(60.f);
-
-//        float3 w_i = lightSurfel.point - surfel->point;
-//        const float distance2 = dot(w_i, w_i);
-//        w_i /= sqrt(distance2);
-
-//        L_o = surfel->material.color * // should calc BDSF
-//                (lightSurfel.material.power / PI_F) *
-//                max(0.f, dot(w_i, surfel->normal)) *
-//                max(0.f, dot(-w_i, lightSurfel.normal / distance2));
 
         return L_o;
     }
@@ -88,7 +168,7 @@ extern "C"
      */
     __device__
     Radiance3 pathTrace(Ray *ray,
-                        float &coeff,
+                        float3 *coeff,
                         Shape *shapes,
                         uint numShapes,
                         Shape *areaLights,
@@ -103,71 +183,25 @@ extern "C"
         if (intersectWorld(ray, shapes, numShapes, &surfel, -1))
         {
             if (isEyeRay && EMIT)
-                L_o += coeff * surfel.material.emitted;
+                L_o += *coeff * surfel.material.emitted;
 
             if (!isEyeRay || DIRECT)
             {
-                L_o += coeff * estimateDirectLightFromAreaLights(&surfel,
-                                                                 ray,
+                L_o += *coeff * estimateDirectLightFromAreaLights(&surfel,
                                                                  shapes,
                                                                  numShapes,
                                                                  areaLights,
                                                                  numAreaLights,
                                                                  randState,
                                                                  id);
-////                for (uint l = 0; l < 1; ++l)
-//                {
-//        //            SurfaceElement lightSurfel = samplePoint(randState, id, areaLights[l]);
-//                    SurfaceElement lightSurfel;
-////                    float x = curand_uniform(randState + id);
-////                    float y = curand_uniform(randState + id);
-////                    float x = 0.f;
-////                    float y = x;
-////                    x = x * 1.99999f - 1.f;
-////                    y = y * 1.99999f - 1.f;
-
-//                    Shape &shape = areaLights[0];
-
-//                    lightSurfel.point = make_float3(shape.trans * make_float4(0.f, 0.f, 0.f, 1.f));
-////                    lightSurfel.point = make_float3(shape.trans * make_float4(x, y, 0.f, 1.f));
-//                    lightSurfel.normal = normalize(shape.normInv * make_float3(0.f, 0.f, -1.f));
-//                    lightSurfel.material = shape.material;
-//                    lightSurfel.index = static_cast<int>(shape.index);
-
-////                    lightSurfel.index = 7;
-////                    lightSurfel.point = make_float3(0.f, 2.475f, -1.5f);
-////                    lightSurfel.normal = make_float3(0.f, -1.f, 0.f);
-////                    lightSurfel.material.power = make_float3(60.f);
-
-////                    printf("[P:](%1.2f, %1.2f, %1.2f)", lightSurfel.point.x, lightSurfel.point.y, lightSurfel.point.z);
-////                    printf("[N:](%1.2f, %1.2f, %1.2f)", lightSurfel.normal.x, lightSurfel.normal.y, lightSurfel.normal.z);
-
-//                    Ray r;
-//                    r.orig = surfel.point + surfel.normal * BUMP_VAL;
-//                    r.dir = normalize((lightSurfel.point + lightSurfel.normal * BUMP_VAL) - r.orig);
-//                    SurfaceElement intersection;
-//                    if (intersectWorld(&r, shapes, numShapes, &intersection, -1) &&
-//                            intersection.index == lightSurfel.index)
-//                    {
-//                        float3 w_i = lightSurfel.point - surfel.point;
-//                        const float distance2 = dot(w_i, w_i);
-//                        w_i /= sqrt(distance2);
-
-//                        L_o += surfel.material.color * // should calc BDSF
-//                                (lightSurfel.material.power / PI_F) *
-//                                max(0.f, dot(w_i, surfel.normal)) *
-//                                max(0.f, dot(-w_i, lightSurfel.normal / distance2));
-//                    }
-//                }
             } // end DIRECT
 
             if (!isEyeRay || INDIRECT)
             {
-                // TODO: indirect illumination
-                ray->isValid = false;
+                *coeff *= estimateIndirectLight(&surfel, ray, randState, id);
             }
-
-//            L_o += coeff * surfel.material.color;
+            if (!INDIRECT)
+                ray->isValid = false;
         }
         else
             ray->isValid = false;
@@ -195,7 +229,8 @@ extern "C"
                           Shape *areaLights,
                           uint numAreaLights,
                           dim3 texDim,
-                          curandState *randState)
+                          curandState *randState,
+                          int bounceLimit)
     {
         // Calculate surface coordinates
         uint x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -220,18 +255,29 @@ extern "C"
             ray.dir = normalize(ray.dir - ray.orig);
             ray.isValid = true;
 
-            float coeff = 1.f;
+            float3 coeff = make_float3(1.f);
             Radiance3 radiance = make_float3(0.f);
 
-            while (ray.isValid)
+            radiance += pathTrace(&ray,
+                                  &coeff,
+                                  shapes,
+                                  numShapes,
+                                  areaLights,
+                                  numAreaLights,
+                                  true,
+                                  randState,
+                                  id);
+
+            int iteration = 1;
+            while (ray.isValid && iteration++ < bounceLimit)
             {
                 radiance += pathTrace(&ray,
-                                      coeff,
+                                      &coeff,
                                       shapes,
                                       numShapes,
                                       areaLights,
                                       numAreaLights,
-                                      true,
+                                      false,
                                       randState,
                                       id);
             }
@@ -270,7 +316,8 @@ extern "C"
                         Shape *areaLights,
                         uint numAreaLights,
                         dim3 texDim,
-                        curandState *randState)
+                        curandState *randState,
+                        int bounceLimit = 1000)
     {
         dim3 thread(32, 32);
         dim3 block(1);
@@ -284,6 +331,7 @@ extern "C"
                                               areaLights,
                                               numAreaLights,
                                               texDim,
-                                              randState);
+                                              randState,
+                                              bounceLimit);
     }
 }

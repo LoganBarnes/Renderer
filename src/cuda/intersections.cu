@@ -87,17 +87,22 @@ extern "C"
     __device__
     float4 intersectQuad(float3 E, float3 D)
     {
-        // norm = (0, 0, -1)
-        // t = dot((0, 0, 0) - E), norm) / dot(D, norm)
+        if (D.z < 0.f)
+            return make_float4(0.f, 0.f, 0.f, INF);
+
+        /*
+         * norm = (0, 0, -1)
+         * t = dot((0, 0, 0) - E), norm) / dot(D, norm)
+         */
         float t = E.z / (-D.z);
         float3 p = E + t * D;
-        if (t < INF && t > 0.0)
+        if (t < INF && t > 0.f)
         {
-            if (p.x >= -1.0 && p.x <= 1.0 && p.y >= -1.0 && p.y <= 1.0)
-                return make_float4(0, 0, -1, t);
+            if (p.x >= -1.f && p.x <= 1.f && p.y >= -1.f && p.y <= 1.f)
+                return make_float4(0.f, 0.f, -1.f, t);
         }
 
-        return make_float4(0, 0, 0, INF);
+        return make_float4(0.f, 0.f, 0.f, INF);
     }
 
     // check for intersections with every shape except the excluded one

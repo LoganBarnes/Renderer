@@ -98,6 +98,9 @@ struct Material
     float3 color;
     float3 power;
     Radiance3 emitted;
+    float3 lambertianReflect;
+    float etaPos; // refractive index out of surface
+    float etaNeg; // refractive index in surface
 };
 
 struct SurfaceElement

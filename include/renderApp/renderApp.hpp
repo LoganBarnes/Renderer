@@ -20,7 +20,7 @@ private:
     void _buildScene();
     int _runLoop();
 
-    void _render(const char *program, const char *mainTex, int iteration, const char *blendTex = 0);
+    void _render(const char *program, const char *mainTex, int iteration, bool texSize = true, const char *blendTex = 0);
 
     GraphicsHandler *m_graphics;
     PathTracer *m_pathTracer;

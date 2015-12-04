@@ -20,12 +20,13 @@ struct Buffer
     GLuint vao;
 };
 
+class Camera;
 
 class GraphicsHandler
 {
 
 public:
-    explicit GraphicsHandler(GLsizei width = 640, GLsizei height = 480);
+    explicit GraphicsHandler(GLsizei width = 640, GLsizei height = 480, Camera *camera = NULL);
     virtual ~GraphicsHandler();
 
     bool init(std::string title = "Window", GLFWerrorfun errorCallback = NULL, GLFWkeyfun keyCallback = NULL);
@@ -37,7 +38,7 @@ public:
 
 
     void addProgram(const char *name, const char *vertFilePath, const char *fragFilePath);
-    void addTextureArray(const char *name, GLsizei width, GLsizei height, float *array = NULL);
+    void addTextureArray(const char *name, GLsizei width, GLsizei height, float *array = NULL, bool linear = false);
     void addTextureImage(const char *name, GLsizei width, GLsizei height, const char *filename);
 
     void addUVBuffer(const char *buffer, const char *program, GLfloat *data, GLuint size, bool dynamic = false);
@@ -46,7 +47,7 @@ public:
     void bindFramebuffer(const char *name);
     void swapFramebuffers(const char *fbo1, const char *fbo2);
 
-    void clearWindow();
+    void clearWindow(GLsizei width = 0, GLsizei height = 0);
     void useProgram(const char *program);
     void renderBuffer(const char *buffer, int verts, GLenum mode);
 
@@ -88,6 +89,7 @@ private:
 
     GLsizei m_viewportWidth, m_viewportHeight;
 
+    Camera *m_camera;
 
     bool m_initialized;
 

@@ -8,12 +8,14 @@
 #include <vector>
 #include <algorithm>
 #include "graphicsHandler.hpp"
+#include "camera.hpp"
 
 
-GraphicsHandler::GraphicsHandler(GLsizei width, GLsizei height)
+GraphicsHandler::GraphicsHandler(GLsizei width, GLsizei height, Camera *camera)
     : m_window(NULL),
       m_viewportWidth(width),
       m_viewportHeight(height),
+      m_camera(camera),
       m_initialized(false)
 {}
 
@@ -62,7 +64,7 @@ void GraphicsHandler::addProgram(const char *name, const char *vertFilePath, con
 }
 
 
-void GraphicsHandler::addTextureArray(const char *name, GLsizei width, GLsizei height, float *array)
+void GraphicsHandler::addTextureArray(const char *name, GLsizei width, GLsizei height, float *array, bool linear)
 {
     if (m_textures.count(name))
         glDeleteTextures(1, &(m_textures[name]));
@@ -73,8 +75,16 @@ void GraphicsHandler::addTextureArray(const char *name, GLsizei width, GLsizei h
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    if (linear)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    else
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, array);
 
@@ -200,9 +210,15 @@ void GraphicsHandler::swapFramebuffers(const char *fbo1, const char *fbo2)
 }
 
 
-void GraphicsHandler::clearWindow()
+void GraphicsHandler::clearWindow(GLsizei width, GLsizei height)
 {
-    glViewport(0, 0, m_viewportWidth, m_viewportHeight);
+    GLsizei w = m_viewportWidth;
+    GLsizei h = m_viewportHeight;
+    if (width > 0)
+        w = width;
+    if (height > 0)
+        h = height;
+    glViewport(0, 0, w, h);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

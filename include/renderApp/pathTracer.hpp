@@ -14,6 +14,7 @@ typedef struct cudaGraphicsResource *cudaGraphicsResource_t;
 #endif
 
 struct Shape;
+struct Material;
 
 /**
  * @brief The PathTracer class.
@@ -32,8 +33,8 @@ public:
     void unregisterTexture(const char *name);
     void swapResources(const char *res1, const char *res2);
 
-    void addShape(ShapeType type, glm::mat4 trans, glm::vec3 color);
-    void addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 power, float area);
+    void addShape(ShapeType type, glm::mat4 trans, Material material);
+    void addAreaLight(ShapeType type, glm::mat4 trans, Material material);
 
     void setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv);
     void tracePath(const char *writeTex, GLuint width, GLuint height);

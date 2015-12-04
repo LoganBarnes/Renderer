@@ -8,6 +8,7 @@
 #include "CudaFunctions.cuh"
 #endif
 
+const int BOUNCE_LIMIT = 5;
 const uint64_t RAND_SEED = 1337;
 
 PathTracer::PathTracer()
@@ -122,7 +123,7 @@ void PathTracer::swapResources(const char *res1, const char *res2)
 }
 
 
-void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec3 color)
+void PathTracer::addShape(ShapeType type, glm::mat4 trans, Material material)
 {
     if (m_numShapes >= MAX_DEVICE_SHAPES)
         return;
@@ -135,9 +136,7 @@ void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec3 color)
     set_float_mat4(shape.trans, trans);
     set_float_mat4(shape.inv, inv);
     set_float_mat3(shape.normInv, normInv);
-    shape.material.color = make_float3(color.x, color.y, color.z);
-    shape.material.power = make_float3(0.f);
-    shape.material.emitted = make_float3(0.f);
+    shape.material = material;
     shape.index = m_numShapes;
 
     cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
@@ -150,7 +149,7 @@ void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec3 color)
 }
 
 
-void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 power, float area)
+void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, Material material)
 {
     if (m_numShapes >= MAX_DEVICE_SHAPES ||
             m_numAreaLights >= MAX_DEVICE_AREA_LIGHTS)
@@ -164,9 +163,7 @@ void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 power, 
     set_float_mat4(shape.trans, trans);
     set_float_mat4(shape.inv, inv);
     set_float_mat3(shape.normInv, normInv);
-    shape.material.color = make_float3(0.f);
-    shape.material.power = make_float3(power.x, power.y, power.z);
-    shape.material.emitted = shape.material.power / (M_PI * area);
+    shape.material = material;
     shape.index = m_numShapes;
 
     cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
@@ -227,7 +224,8 @@ void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height)
                    m_dAreaLights,
                    m_numAreaLights,
                    dim3(width, height),
-                   m_dRandState);
+                   m_dRandState,
+                   BOUNCE_LIMIT);
 
     cuda_destroySurfaceObject(surface);
     cuda_graphicsUnmapResource(&res);
