@@ -30,12 +30,13 @@ public:
 
     void register2DTexture(const char *name, GLuint tex);
     void unregisterTexture(const char *name);
+    void swapResources(const char *res1, const char *res2);
 
     void addShape(ShapeType type, glm::mat4 trans, glm::vec3 color);
     void addAreaLight(ShapeType type, glm::mat4 trans, glm::vec3 power, float area);
 
     void setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv);
-    void tracePath(const char *writeTex, GLuint width, GLuint height, GLuint iteration);
+    void tracePath(const char *writeTex, GLuint width, GLuint height);
 
 private:
 
@@ -44,7 +45,7 @@ private:
     // handles OpenGL-CUDA exchanges
     std::unordered_map<const char *, cudaGraphicsResource_t> m_resources;
 
-    void _tracePathCUDA(const char *writeTex, GLuint width, GLuint height, GLuint iteration);
+    void _tracePathCUDA(const char *writeTex, GLuint width, GLuint height);
 
     float *m_dScaleViewInvEye;  // device matrix
     Shape *m_dShapes;           // device shapes

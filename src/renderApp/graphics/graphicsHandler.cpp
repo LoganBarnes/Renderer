@@ -33,6 +33,12 @@ GraphicsHandler::~GraphicsHandler()
         glDeleteBuffers(1, &(buffer.vbo));
         glDeleteVertexArrays(1, &(buffer.vao));
     }
+    for (std::unordered_map <const char*, Buffer>::const_iterator it = m_framebuffers.begin(); it != m_framebuffers.end(); ++it)
+    {
+        const Buffer &buffer = it->second;
+        glDeleteFramebuffers(1, &(buffer.vbo));
+        glDeleteRenderbuffers(1, &(buffer.vao));
+    }
 
     _terminateGLFW();
 }
@@ -143,6 +149,57 @@ void GraphicsHandler::addUVBuffer(const char *name, const char *program, GLfloat
 }
 
 
+void GraphicsHandler::addFramebuffer(const char *buffer, GLuint width, GLuint height, const char *texture)
+{
+    if (m_framebuffers.count(buffer))
+    {
+        Buffer buf = m_framebuffers[buffer];
+        glDeleteFramebuffers(1, &(buf.vbo));
+        glDeleteRenderbuffers(1, &(buf.vao));
+    }
+
+    GLuint fbo;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    GLuint rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    // attach a texture to FBO color attachment point
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textures[texture], 0);
+
+    // attach a renderbuffer to depth attachment point
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    Buffer buf;
+    buf.vbo = fbo;
+    buf.vao = rbo;
+    m_framebuffers[buffer] = buf;
+}
+
+
+void GraphicsHandler::bindFramebuffer(const char *name)
+{
+    if (name && m_framebuffers.count(name))
+        glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffers[name].vbo);
+    else
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
+void GraphicsHandler::swapFramebuffers(const char *fbo1, const char *fbo2)
+{
+    Buffer temp = m_framebuffers[fbo1];
+    m_framebuffers[fbo1] = m_framebuffers[fbo2];
+    m_framebuffers[fbo2] = temp;
+}
+
+
 void GraphicsHandler::clearWindow()
 {
     glViewport(0, 0, m_viewportWidth, m_viewportHeight);
@@ -156,10 +213,24 @@ void GraphicsHandler::useProgram(const char *program)
 }
 
 
-void GraphicsHandler::setTexture(const char *program, const char *texture)
+void GraphicsHandler::setTextureUniform(const char *program, const char *uniform, const char *texture, int activeTex)
 {
-    glActiveTexture(GL_TEXTURE0);
-    glUniform1i(glGetUniformLocation(m_programs[program], "uTexture"), 0);
+    switch(activeTex)
+    {
+    case 0:
+        glActiveTexture(GL_TEXTURE0);
+        break;
+    case 1:
+        glActiveTexture(GL_TEXTURE1);
+        break;
+    case 2:
+        glActiveTexture(GL_TEXTURE2);
+        break;
+    default:
+        glActiveTexture(GL_TEXTURE3);
+        break;
+    }
+    glUniform1i(glGetUniformLocation(m_programs[program], uniform), activeTex);
     glBindTexture(GL_TEXTURE_2D, m_textures[texture]);
 }
 
@@ -169,17 +240,6 @@ void GraphicsHandler::renderBuffer(const char* buffer, int verts, GLenum mode)
     glBindVertexArray(m_buffers[buffer].vao);
     glDrawArrays(mode, 0, verts);
     glBindVertexArray(0);
-}
-
-
-void GraphicsHandler::render(const char *program, const char *buffer, int verts, GLenum mode, const char *texture, bool clear)
-{
-    if (clear)
-        this->clearWindow();
-    this->useProgram(program);
-    if (texture)
-        this->setTexture(program, texture);
-    this->renderBuffer(buffer, verts, mode);
 }
 
 
@@ -205,13 +265,26 @@ void GraphicsHandler::setBoolUniform(const char *program, const char *uniform, b
 }
 
 
+void GraphicsHandler::setIntUniform(const char *program, const char *uniform, int value)
+{
+    glUniform1i(glGetUniformLocation(m_programs[program], uniform), value);
+}
+
+
+void GraphicsHandler::swapTextures(const char *tex1, const char *tex2)
+{
+    GLuint temp = m_textures[tex1];
+    m_textures[tex1] = m_textures[tex2];
+    m_textures[tex2] = temp;
+}
+
+
 void GraphicsHandler::setBlending(bool blend)
 {
     if (blend)
     {
         glEnable(GL_BLEND);
         glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-//        glBlendFuncSeparate(ßGL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
     } else
         glDisable(GL_BLEND);

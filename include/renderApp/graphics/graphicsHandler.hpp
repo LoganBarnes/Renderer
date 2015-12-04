@@ -42,18 +42,24 @@ public:
 
     void addUVBuffer(const char *buffer, const char *program, GLfloat *data, GLuint size, bool dynamic = false);
 
-    void render(const char *program, const char *buffer, int verts, GLenum mode, const char *texture, bool clear = true);
+    void addFramebuffer(const char *buffer, GLuint width, GLuint height, const char *texture);
+    void bindFramebuffer(const char *name);
+    void swapFramebuffers(const char *fbo1, const char *fbo2);
+
     void clearWindow();
     void useProgram(const char *program);
-    void setTexture(const char *program, const char *texture);
     void renderBuffer(const char *buffer, int verts, GLenum mode);
-    void updateWindow();
 
+    void setTextureUniform(const char *program, const char *uniform, const char *texture, int activeTex);
     void setBoolUniform(const char *program, const char *uniform, bool var);
+    void setIntUniform(const char *program, const char *uniform, int value);
     void setBuffer(const char *bufferName, float *data, GLuint size);
+
+    void swapTextures(const char *tex1, const char *tex2);
 
     void setBlending(bool blend);
 
+    void updateWindow();
     void setWindowShouldClose(bool close);
     bool checkWindowShouldClose();
     double getTime();
@@ -78,6 +84,7 @@ private:
     std::unordered_map <const char*, GLuint> m_programs;
     std::unordered_map <const char*, GLuint> m_textures;
     std::unordered_map <const char*, Buffer> m_buffers;
+    std::unordered_map <const char*, Buffer> m_framebuffers;
 
     GLsizei m_viewportWidth, m_viewportHeight;
 

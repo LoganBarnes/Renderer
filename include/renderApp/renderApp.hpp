@@ -1,7 +1,6 @@
 #ifndef RENDER_APP_H
 #define RENDER_APP_H
 
-typedef unsigned int uint;
 typedef struct GLFWwindow GLFWwindow;
 
 class GraphicsHandler;
@@ -21,13 +20,14 @@ private:
     void _buildScene();
     int _runLoop();
 
+    void _render(const char *program, const char *mainTex, int iteration, const char *blendTex = 0);
 
     GraphicsHandler *m_graphics;
     PathTracer *m_pathTracer;
     Camera *m_camera;
 
     double m_loopFPS;
-    uint m_iterationWithoutClear;
+    int m_iterationWithoutClear;
 };
 
 #endif // RENDER_APP_H

@@ -195,8 +195,7 @@ extern "C"
                           Shape *areaLights,
                           uint numAreaLights,
                           dim3 texDim,
-                          curandState *randState,
-                          uint iteration)
+                          curandState *randState)
     {
         // Calculate surface coordinates
         uint x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -238,7 +237,6 @@ extern "C"
             }
 
             float scale = 1.f;
-//            float4 result = make_float4(radiance * (1.f / scale), 1.f / static_cast<float>(iteration / 2));
             float4 result = make_float4(radiance * (1.f / scale), 1.f);
             clamp(result, 0.f, 1.f);
 
@@ -272,8 +270,7 @@ extern "C"
                         Shape *areaLights,
                         uint numAreaLights,
                         dim3 texDim,
-                        curandState *randState,
-                        uint iteration)
+                        curandState *randState)
     {
         dim3 thread(32, 32);
         dim3 block(1);
@@ -287,7 +284,6 @@ extern "C"
                                               areaLights,
                                               numAreaLights,
                                               texDim,
-                                              randState,
-                                              iteration);
+                                              randState);
     }
 }

@@ -108,6 +108,19 @@ void PathTracer::unregisterTexture(const char *name)
 #endif
 }
 
+void PathTracer::swapResources(const char *res1, const char *res2)
+{
+#ifdef USE_CUDA
+    cudaGraphicsResource_t temp = m_resources[res1];
+    m_resources[res1] = m_resources[res2];
+    m_resources[res2] = temp;
+#else
+    GLuint temp = m_textures[res1];
+    m_textures[res1] = m_textures[res2];
+    m_textures[res2] = temp;
+#endif
+}
+
 
 void PathTracer::addShape(ShapeType type, glm::mat4 trans, glm::vec3 color)
 {
@@ -182,17 +195,17 @@ void PathTracer::setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv)
 }
 
 
-void PathTracer::tracePath(const char *writeTex, GLuint width, GLuint height, GLuint iteration)
+void PathTracer::tracePath(const char *writeTex, GLuint width, GLuint height)
 {
 #ifdef USE_CUDA
-    this->_tracePathCUDA(writeTex, width, height, iteration);
+    this->_tracePathCUDA(writeTex, width, height);
 #else
     this->_tracePathCPU(writeTex, width, height);
 #endif
 }
 
 #ifdef USE_CUDA
-void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height, GLuint iteration)
+void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height)
 {
     cudaGraphicsResource_t res = m_resources[tex];
 
@@ -214,8 +227,7 @@ void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height, GL
                    m_dAreaLights,
                    m_numAreaLights,
                    dim3(width, height),
-                   m_dRandState,
-                   iteration);
+                   m_dRandState);
 
     cuda_destroySurfaceObject(surface);
     cuda_graphicsUnmapResource(&res);
