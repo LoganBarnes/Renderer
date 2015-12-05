@@ -7,22 +7,22 @@
 #include "renderObjects.hpp"
 #include "graphicsHandler.hpp"
 #include "camera.hpp"
-#include "renderInput.hpp"
+#include "renderCallback.hpp"
 
-const int DEFAULT_WIDTH = 640;
-const int DEFAULT_HEIGHT = 480;
+//const int DEFAULT_WIDTH = 640;
+//const int DEFAULT_HEIGHT = 480;
 
-//const int DEFAULT_WIDTH = 480;
-//const int DEFAULT_HEIGHT = 380;
+const int DEFAULT_WIDTH = 480;
+const int DEFAULT_HEIGHT = 380;
 
-//const int TEX_WIDTH = DEFAULT_WIDTH;
-//const int TEX_HEIGHT = DEFAULT_HEIGHT;
+const int TEX_WIDTH = DEFAULT_WIDTH;
+const int TEX_HEIGHT = DEFAULT_HEIGHT;
 
 const float LIGHT_SCALING = 0.5f;
 
 // anti aliasing of sorts
-const int TEX_WIDTH = DEFAULT_WIDTH * 2;
-const int TEX_HEIGHT = DEFAULT_HEIGHT * 2;
+//const int TEX_WIDTH = DEFAULT_WIDTH * 2;
+//const int TEX_HEIGHT = DEFAULT_HEIGHT * 2;
 
 
 RenderApp::RenderApp()
@@ -49,13 +49,39 @@ RenderApp::~RenderApp()
         delete m_pathTracer;
 }
 
+
+void RenderApp::rotateCamera(double deltaX, double deltaY)
+{
+    static_cast<float>(deltaX);
+    static_cast<float>(deltaY);
+}
+
+
+//void RenderApp::resize(int width, int height)
+//{
+//    m_graphics->resize(width, height);
+//    m_camera->setAspectRatio(
+//                static_cast<float>(width) / static_cast<float>(height));
+//    m_pathTracer->setScaleViewInvEye(m_camera->getEye(), m_camera->getScaleViewInvMatrix());
+
+//    this->_resetBlendTexture();
+
+//    // render texture
+//    m_graphics->bindFramebuffer(NULL);
+//    this->_render("default", "blendTex2", -1, false);
+
+//    // swap buffers
+//    m_graphics->updateWindow();
+//}
+
+
 int RenderApp::execute(int argc, const char **argv)
 {
 
     if (!m_graphics->init("Render App"))
         return 1;
 
-    RenderInput input;
+    RenderInput input(this, m_graphics->getWindow());
     m_graphics->setCallback(&input);
 
     std::string vertPath = std::string(RESOURCES_PATH) + "/shaders/default.vert";
@@ -72,8 +98,7 @@ int RenderApp::execute(int argc, const char **argv)
     m_graphics->addFramebuffer("framebuffer2", TEX_WIDTH, TEX_HEIGHT, "blendTex2");
 
     m_camera->setAspectRatio(
-                static_cast<float>(DEFAULT_WIDTH) /
-                static_cast<float>(DEFAULT_HEIGHT));
+                static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
 
     m_pathTracer->init(argc, argv, TEX_WIDTH, TEX_HEIGHT);
 
@@ -92,18 +117,13 @@ int RenderApp::_runLoop()
 {
 //    uint counterMax = 200000000;
 //    uint counterMax = 1000000;
-//    uint counterMax = 10000;
+//    uint counterMax = 1000;
 //    uint counterMax = 10;
 //    uint counter = counterMax + 1;
 
     // TODO: stop rendering after convergence limit?
 
-    // clear blending texture
-    m_graphics->bindFramebuffer("framebuffer1");
-    m_graphics->clearWindow(TEX_WIDTH, TEX_HEIGHT);
-    m_graphics->updateWindow();
-
-    m_iterationWithoutClear = 1;
+    this->_resetBlendTexture();
 
     while (!m_graphics->checkWindowShouldClose())
     {
@@ -135,6 +155,17 @@ int RenderApp::_runLoop()
     }
 
     return 0;
+}
+
+
+void RenderApp::_resetBlendTexture()
+{
+    // clear blending texture
+    m_graphics->bindFramebuffer("framebuffer1");
+    m_graphics->clearWindow(TEX_WIDTH, TEX_HEIGHT);
+
+    // reset iteration number
+    m_iterationWithoutClear = 1;
 }
 
 

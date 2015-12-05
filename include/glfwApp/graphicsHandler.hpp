@@ -18,8 +18,8 @@ struct Buffer
     GLuint vao;
 };
 
-class Input;
-class InputCallback;
+class CallbackSingleton;
+class Callback;
 
 
 class GraphicsHandler
@@ -29,13 +29,13 @@ public:
     explicit GraphicsHandler(GLsizei width = 640, GLsizei height = 480);
     virtual ~GraphicsHandler();
 
-    bool init(std::string title = "Window", GLFWerrorfun errorCallback = NULL);
+    bool init(std::string title = "Window");
 
     // getters
     GLuint getTexture(const char *name) { return m_textures[name]; }
     GLsizei getViewportWidth() { return m_viewportWidth; }
     GLsizei getViewportHeight() { return m_viewportHeight; }
-
+    GLFWwindow *getWindow() { return m_window; }
 
     void addProgram(const char *name, const char *vertFilePath, const char *fragFilePath);
     void addTextureArray(const char *name, GLsizei width, GLsizei height, float *array = NULL, bool linear = false);
@@ -59,7 +59,7 @@ public:
     void swapTextures(const char *tex1, const char *tex2);
 
     void setBlending(bool blend);
-    void setCallback(InputCallback *callback);
+    void setCallback(Callback *callback);
 
     void updateWindow();
     void setWindowShouldClose(bool close);
@@ -69,15 +69,13 @@ public:
 
 
 private:
-    bool _initGLFW(std::__1::string title, GLFWerrorfun errorCallback);
+    bool _initGLFW(std::__1::string title);
     bool _initGLEW();
 
     void _terminateGLFW();
 
     static std::string _readFile(const char *filePath);
     static GLuint _loadShader(const char *vertex_path, const char *fragment_path);
-
-    static void _default_error_callback(int error, const char* description);
 
 
     GLFWwindow *m_window;
@@ -89,7 +87,7 @@ private:
 
     GLsizei m_viewportWidth, m_viewportHeight;
 
-    Input *m_input;
+    CallbackSingleton *m_input;
 
     bool m_initialized;
 

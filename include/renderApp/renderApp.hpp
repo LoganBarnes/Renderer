@@ -14,11 +14,16 @@ public:
     explicit RenderApp();
     virtual ~RenderApp();
 
+    void rotateCamera(double deltaX, double deltaY);
+    void resize(int width, int height);
+
     int execute(int argc, const char **argv);
 
 private:
     void _buildScene();
     int _runLoop();
+
+    void _resetBlendTexture();
 
     void _render(const char *program, const char *mainTex, int iteration, bool texSize = true, const char *blendTex = 0);
 

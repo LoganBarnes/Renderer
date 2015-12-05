@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include "graphicsHandler.hpp"
-#include "input.hpp"
+#include "callbackSingleton.hpp"
 
 
 GraphicsHandler::GraphicsHandler(GLsizei width, GLsizei height)
@@ -18,7 +18,7 @@ GraphicsHandler::GraphicsHandler(GLsizei width, GLsizei height)
       m_input(NULL),
       m_initialized(false)
 {
-    m_input = &Input::getInstance();
+    m_input = &CallbackSingleton::getInstance();
 }
 
 GraphicsHandler::~GraphicsHandler()
@@ -54,9 +54,9 @@ GraphicsHandler::~GraphicsHandler()
  * @param keyCallback - function called when keys are typed and the window is in focus
  * @return true if everything intialized correctly, false otherwise
  */
-bool GraphicsHandler::init(std::string title, GLFWerrorfun errorCallback)
+bool GraphicsHandler::init(std::string title)
 {
-    return this->_initGLFW(title, errorCallback) && this->_initGLEW();
+    return this->_initGLFW(title) && this->_initGLEW();
 }
 
 
@@ -309,7 +309,7 @@ void GraphicsHandler::setBlending(bool blend)
 }
 
 
-void GraphicsHandler::setCallback(InputCallback *callback)
+void GraphicsHandler::setCallback(Callback *callback)
 {
     m_input->setCallback(callback);
 }
@@ -340,7 +340,7 @@ void GraphicsHandler::resize(GLsizei width, GLsizei height)
 }
 
 
-bool GraphicsHandler::_initGLFW(std::string title, GLFWerrorfun errorCallback)
+bool GraphicsHandler::_initGLFW(std::string title)
 {
     if (!glfwInit())
         return false;
@@ -350,15 +350,16 @@ bool GraphicsHandler::_initGLFW(std::string title, GLFWerrorfun errorCallback)
 
     m_initialized = true;
 
-    if (errorCallback)
-        glfwSetErrorCallback(errorCallback);
-    else
-        glfwSetErrorCallback(GraphicsHandler::_default_error_callback);
+    glfwSetErrorCallback(CallbackSingleton::errorCallback);
+
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // until resize is implemented
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     if (title.length() == 0)
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
@@ -372,9 +373,12 @@ bool GraphicsHandler::_initGLFW(std::string title, GLFWerrorfun errorCallback)
 
     glfwSwapInterval(1);
 
-    glfwSetMouseButtonCallback(m_window, Input::mouseButtonCallback);
-    glfwSetKeyCallback(m_window, Input::keyCallback);
-    glfwSetCursorPosCallback(m_window, Input::cursorPositionCallback);
+    /* set default callback functions */
+    glfwSetWindowSizeCallback(m_window, CallbackSingleton::windowSizeCallback);
+
+    glfwSetMouseButtonCallback(m_window, CallbackSingleton::mouseButtonCallback);
+    glfwSetKeyCallback(m_window, CallbackSingleton::keyCallback);
+    glfwSetCursorPosCallback(m_window, CallbackSingleton::cursorPositionCallback);
 
     return true;
 }
@@ -510,12 +514,6 @@ GLuint GraphicsHandler::_loadShader(const char *vertex_path, const char *fragmen
     glDeleteShader(fragShader);
 
     return program;
-}
-
-
-void GraphicsHandler::_default_error_callback(int error, const char* description)
-{
-    std::cerr << "ERROR: (" << error << ") " << description << std::endl;
 }
 
 

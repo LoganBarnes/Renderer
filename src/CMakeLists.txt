@@ -5,11 +5,11 @@ set(SOURCE
     # glfwApp
     "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/graphicsHandler.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/camera.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/input.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/callbackSingleton.cpp"
     # renderApp
     "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderApp.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/pathTracer.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderInput.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderCallback.cpp"
     PARENT_SCOPE
 )
 

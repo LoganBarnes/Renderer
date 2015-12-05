@@ -32,6 +32,8 @@ public:
     void yaw(float degrees);
     void roll(float degrees);
 
+//    void updateOrbit(float zoomZ, float deltaX, float deltaY);
+
 protected:
     void setCameraSpace();
     void setViewMatrix();
