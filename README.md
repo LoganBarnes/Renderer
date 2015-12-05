@@ -21,5 +21,5 @@ And everything THAT light touches:
 
 And BOOM! Path tracer.
 
-![Balls Again](renderings/lambertsBalls/balls.png)
+![Balls Again](http://www.gfycat.com/MellowUnfortunateHarlequinbug.gif)
 
