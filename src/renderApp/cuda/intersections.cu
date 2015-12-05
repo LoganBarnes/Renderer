@@ -81,9 +81,9 @@ extern "C"
 
 
     __device__
-    float4 intersectQuad(float3 E, float3 D)
+    float4 intersectQuad(float3 E, float3 D, bool isEyeRay)
     {
-        if (D.z < 0.f)
+        if (D.z < 0.f && isEyeRay)
             return make_float4(0.f, 0.f, 0.f, INF);
 
         /*
@@ -95,7 +95,11 @@ extern "C"
         if (t < INF && t > 0.f)
         {
             if (p.x >= -1.f && p.x <= 1.f && p.y >= -1.f && p.y <= 1.f)
-                return make_float4(0.f, 0.f, -1.f, t);
+            {
+                if (D.z >= 0.f)
+                    return make_float4(0.f, 0.f, -1.f, t);
+                return make_float4(0.f, 0.f, 1.f, t);
+            }
         }
 
         return make_float4(0.f, 0.f, 0.f, INF);
@@ -103,7 +107,7 @@ extern "C"
 
     // check for intersections with every shape except the excluded one
     __device__
-    bool intersectWorld(Ray *r, Shape *shapes, uint numShapes, SurfaceElement *surfel, int exclude)
+    bool intersectWorld(Ray *r, Shape *shapes, uint numShapes, SurfaceElement *surfel, int exclude, bool isEyeRay = false)
     {
         float4 n = make_float4(INF);
         float4 tempN = make_float4(INF);
@@ -166,7 +170,7 @@ extern "C"
                 }
                 break;
             case QUAD:
-                tempN = intersectQuad(E, D);
+                tempN = intersectQuad(E, D, isEyeRay);
                 if (tempN.w < n.w)
                 {
                     n = tempN;

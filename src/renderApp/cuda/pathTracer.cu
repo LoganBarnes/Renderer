@@ -175,7 +175,7 @@ extern "C"
         Radiance3 L_o = make_float3(0.f);
 
         SurfaceElement surfel;
-        if (intersectWorld(ray, shapes, numShapes, &surfel, -1))
+        if (intersectWorld(ray, shapes, numShapes, &surfel, -1, isEyeRay))
         {
             if (isEyeRay && debugEmit)
                 L_o += *coeff * surfel.material.emitted;

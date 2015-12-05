@@ -52,8 +52,10 @@ RenderApp::~RenderApp()
 
 void RenderApp::rotateCamera(double deltaX, double deltaY)
 {
-    static_cast<float>(deltaX);
-    static_cast<float>(deltaY);
+    m_camera->updateOrbit(0.f, static_cast<float>(deltaX), static_cast<float>(deltaY));
+    m_pathTracer->setScaleViewInvEye(m_camera->getEye(), m_camera->getScaleViewInvMatrix());
+
+    this->_resetBlendTexture();
 }
 
 
@@ -99,6 +101,7 @@ int RenderApp::execute(int argc, const char **argv)
 
     m_camera->setAspectRatio(
                 static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
+    m_camera->updateOrbit(7.f, 0.f, 0.f);
 
     m_pathTracer->init(argc, argv, TEX_WIDTH, TEX_HEIGHT);
 
@@ -139,19 +142,18 @@ int RenderApp::_runLoop()
         // blend to texture
         m_graphics->bindFramebuffer("framebuffer2");
         m_pathTracer->tracePath("currTex", TEX_WIDTH, TEX_HEIGHT, LIGHT_SCALING);
-        this->_render("default", "currTex", m_iterationWithoutClear, true, "blendTex1");
+        this->_render("default", "currTex", m_iterationWithoutClear++, true, "blendTex1");
 
         // render texture
         m_graphics->bindFramebuffer(NULL);
         this->_render("default", "blendTex2", -1, false);
 
-        // swap buffers
-        m_graphics->updateWindow();
-        ++m_iterationWithoutClear;
-
         // swap texture and framebuffer values so we can use the same names
         m_graphics->swapTextures("blendTex1", "blendTex2");
         m_graphics->swapFramebuffers("framebuffer1", "framebuffer2");
+
+        // swap buffers and trigger callback functions
+        m_graphics->updateWindow();
     }
 
     return 0;
@@ -188,9 +190,9 @@ void RenderApp::_buildScene()
 {
     // 0: left (green) wall
     glm::mat4 trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(-2.5f, 0.f, -1.5f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(-2.5f, 0.f, 0.f));
     trans *= glm::rotate(glm::mat4(), glm::radians(-90.f), glm::vec3(0.f, 1.f, 0.f));
-    trans *= glm::scale(glm::mat4(), glm::vec3(2.f, 2.5f, 1.f));
+    trans *= glm::scale(glm::mat4(), glm::vec3(2.5f, 2.5f, 1.f));
 
     Material mat;
     mat.power = make_float3(0.f);
@@ -203,9 +205,9 @@ void RenderApp::_buildScene()
 
     // 1: right (red) wall
     trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(2.5f, 0.f, -1.5f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(2.5f, 0.f, 0.f));
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
-    trans *= glm::scale(glm::mat4(), glm::vec3(2.f, 2.5f, 1.f));
+    trans *= glm::scale(glm::mat4(), glm::vec3(2.5f, 2.5f, 1.f));
 
     mat.color = make_float3(0.610f, 0.057f, 0.062f);
     mat.lambertianReflect = make_float3(0.610f, 0.057f, 0.062f);
@@ -213,9 +215,9 @@ void RenderApp::_buildScene()
 
     // 2: ceiling
     trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 2.5f, -1.5f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 2.5f, 0.f));
     trans *= glm::rotate(glm::mat4(), glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
-    trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.001f, 1.f));
+    trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.501f, 1.f));
 
     mat.lambertianReflect = make_float3(0.730f, 0.725f, 0.729f);
     mat.color = make_float3(0.730f, 0.725f, 0.729f);
@@ -223,15 +225,15 @@ void RenderApp::_buildScene()
 
     // 3: floor
     trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, -2.5f, -1.5f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, -2.5f, 0.f));
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
-    trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.001f, 1.f));
+    trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.501f, 1.f));
 
     m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 4: back wall
     trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 0.f, -3.5f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 0.f, -2.5f));
     trans *= glm::rotate(glm::mat4(), glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.501f, 1.f));
 
@@ -239,26 +241,26 @@ void RenderApp::_buildScene()
 
     // 5: front wall
     trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 0.f, 0.5f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 0.f, 2.5f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.501f, 1.f));
 
     m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 6: close sphere
     trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(1.f, -1.5f, -0.5f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(1.f, -1.5f, 0.5f));
 
     m_pathTracer->addShape(SPHERE, trans, mat, false);
 
     // 7: far sphere
     trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(-1.f, -1.5f, -2.5f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(-1.f, -1.5f, -1.25f));
 
     m_pathTracer->addShape(SPHERE, trans, mat, false);
 
     // 8: light
     trans = glm::mat4();
-    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 2.495f, -1.5f));
+    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 2.495f, 0.f));
     trans *= glm::rotate(glm::mat4(), glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(0.5f, 0.3, 1.f));
 
@@ -268,7 +270,20 @@ void RenderApp::_buildScene()
     mat.lambertianReflect = make_float3(0.f);
     mat.etaPos = 1.f;
     mat.etaNeg = 1.f;
+
     m_pathTracer->addAreaLight(QUAD, trans, mat, false);
+
+    // 10: light
+//    trans = glm::mat4();
+//    trans *= glm::translate(glm::mat4(), glm::vec3(0.f, -2.495f, 0.f));
+//    trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
+//    trans *= glm::scale(glm::mat4(), glm::vec3(0.5f, 0.3, 1.f));
+
+//    mat.power = make_float3(18.4f, 15.6f, 8.f) * 3.f;
+//    mat.emitted = mat.power / (M_PI * 0.5f * 0.3f); // pi * area
+//    m_pathTracer->addAreaLight(QUAD, trans, mat, false);
+
+//    m_pathTracer->addAreaLight(QUAD, trans, mat, false);
 }
 
 

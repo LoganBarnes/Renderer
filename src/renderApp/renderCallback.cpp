@@ -81,8 +81,10 @@ void RenderInput::handleKey(GLFWwindow *window, int key, int, int action, int)
 //void RenderInput::handleCursorPosition(GLFWwindow *window, double xpos, double ypos)
 void RenderInput::handleCursorPosition(GLFWwindow*, double xpos, double ypos)
 {
-//    if (m_rightMouseDown)
-
+    if (m_leftMouseDown)
+    {
+        m_app->rotateCamera(m_prevX - xpos, m_prevY - ypos);
+    }
 
     m_prevX = xpos;
     m_prevY = ypos;

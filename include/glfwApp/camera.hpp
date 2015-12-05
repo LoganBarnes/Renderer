@@ -32,7 +32,7 @@ public:
     void yaw(float degrees);
     void roll(float degrees);
 
-//    void updateOrbit(float zoomZ, float deltaX, float deltaY);
+    void updateOrbit(float zoomZ, float deltaX, float deltaY);
 
 protected:
     void setCameraSpace();
@@ -48,6 +48,8 @@ protected:
 
     // View variables
     float m_near, m_far, m_heightDegrees, m_aspectRatio;
+
+    float m_orbitX, m_orbitY, m_zoomZ;
 
     float m_thirdDist;
 
