@@ -9,6 +9,7 @@ set(SOURCE
     # renderApp
     "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderApp.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/pathTracer.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderInput.cpp"
     PARENT_SCOPE
 )
 

@@ -1,4 +1,5 @@
 #include "input.hpp"
+#include "inputCallback.hpp"
 
 
 Input& Input::getInstance() // Singleton is accessed via getInstance()
@@ -8,15 +9,103 @@ Input& Input::getInstance() // Singleton is accessed via getInstance()
 }
 
 
-void Input::mouseButtonCallback(int key, int action) // this method is specified as glfw callback
+/*
+ *
+ * STATIC CALLBACKS
+ *
+ */
+
+/**
+ * @brief Input::keyCallback
+ * @param window
+ * @param key
+ * @param scancode
+ * @param action
+ * @param mods
+ */
+void Input::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    //here we access the instance via the singleton pattern and forward the callback to the instance method
-    Input::getInstance().mouseButtonCallbackImpl(key, action);
+    Input::getInstance().defaultKeyCallback(window, key, scancode, action, mods);
 }
 
-//void Input::mouseButtonCallbackImpl(int key, int action) //this is the actual implementation of the callback method
-void Input::mouseButtonCallbackImpl(int , int ) //this is the actual implementation of the callback method
+/**
+ * @brief Input::cursorPositionCallback
+ * @param window
+ * @param xpos
+ * @param ypos
+ */
+void Input::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
 {
-    //the callback is handled in this instance method
-    //... [CODE here]
+    Input::getInstance().defaultCursorPositionCallback(window, xpos, ypos);
 }
+
+/**
+ * @brief Input::mouseButtonCallback
+ * @param window
+ * @param button
+ * @param action
+ * @param mods
+ */
+void Input::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    Input::getInstance().defaultMouseButtonCallback(window, button, action, mods);
+}
+
+
+/*
+ *
+ * ACTUAL MEMBER IMPLEMENTATIONS
+ *
+ */
+
+/**
+ * @brief Input::defaultKeyCallback
+ * @param window
+ * @param key
+ * @param scancode
+ * @param action
+ * @param mods
+ */
+void Input::defaultKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (m_callback)
+        m_callback->onKey(window, key, scancode, action, mods);
+}
+
+/**
+ * @brief Input::defaultCursorPosition_callback
+ * @param window
+ * @param xpos
+ * @param ypos
+ */
+void Input::defaultCursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (m_callback)
+        m_callback->onCursorPosition(window, xpos, ypos);
+}
+
+/**
+ * @brief Input::defaultMouseButtonCallback
+ * @param window
+ * @param button
+ * @param action
+ * @param mods
+ */
+void Input::defaultMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (m_callback)
+        m_callback->onMouseButton(window, button, action, mods);
+}
+
+
+
+void Input::setCallback(InputCallback *callback)
+{
+    m_callback = callback;
+}
+
+
+
+
+
+

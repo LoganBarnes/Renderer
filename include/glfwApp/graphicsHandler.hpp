@@ -1,7 +1,6 @@
 #ifndef GRAPHICS_HANDLER_H
 #define GRAPHICS_HANDLER_H
 
-//#include <GL/glew.h>
 #include <unordered_map>
 
 typedef int GLsizei;
@@ -12,13 +11,16 @@ typedef uint32_t GLenum;
 typedef struct GLFWwindow GLFWwindow;
 
 typedef void (* GLFWerrorfun)(int,const char*);
-typedef void (* GLFWkeyfun)(GLFWwindow*,int,int,int,int);
 
 struct Buffer
 {
     GLuint vbo;
     GLuint vao;
 };
+
+class Input;
+class InputCallback;
+
 
 class GraphicsHandler
 {
@@ -27,7 +29,7 @@ public:
     explicit GraphicsHandler(GLsizei width = 640, GLsizei height = 480);
     virtual ~GraphicsHandler();
 
-    bool init(std::string title = "Window", GLFWerrorfun errorCallback = NULL, GLFWkeyfun keyCallback = NULL);
+    bool init(std::string title = "Window", GLFWerrorfun errorCallback = NULL);
 
     // getters
     GLuint getTexture(const char *name) { return m_textures[name]; }
@@ -57,6 +59,7 @@ public:
     void swapTextures(const char *tex1, const char *tex2);
 
     void setBlending(bool blend);
+    void setCallback(InputCallback *callback);
 
     void updateWindow();
     void setWindowShouldClose(bool close);
@@ -66,7 +69,7 @@ public:
 
 
 private:
-    bool _initGLFW(std::__1::string title, GLFWerrorfun errorCallback, GLFWkeyfun keyCallback);
+    bool _initGLFW(std::__1::string title, GLFWerrorfun errorCallback);
     bool _initGLEW();
 
     void _terminateGLFW();
@@ -74,7 +77,6 @@ private:
     static std::string _readFile(const char *filePath);
     static GLuint _loadShader(const char *vertex_path, const char *fragment_path);
 
-    static void _default_key_callback(GLFWwindow* window, int key, int, int action, int);
     static void _default_error_callback(int error, const char* description);
 
 
@@ -86,6 +88,8 @@ private:
     std::unordered_map <const char*, Buffer> m_framebuffers;
 
     GLsizei m_viewportWidth, m_viewportHeight;
+
+    Input *m_input;
 
     bool m_initialized;
 

@@ -7,9 +7,11 @@ if (USE_CUDA)
         "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/graphicsHandler.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/camera.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/input.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/inputCallback.hpp"
         # renderApp
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderApp.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/pathTracer.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderInput.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderObjects.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderTypes.hpp"
         # renderApp/cuda
@@ -26,9 +28,12 @@ else (USE_CUDA)
         # glfwApp
         "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/graphicsHandler.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/camera.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/input.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/glfwApp/inputCallback.hpp"
         # renderApp
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderApp.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/pathTracer.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderInput.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderObjects.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderTypes.hpp"
     )

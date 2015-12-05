@@ -8,14 +8,18 @@
 #include <vector>
 #include <algorithm>
 #include "graphicsHandler.hpp"
+#include "input.hpp"
 
 
 GraphicsHandler::GraphicsHandler(GLsizei width, GLsizei height)
     : m_window(NULL),
       m_viewportWidth(width),
       m_viewportHeight(height),
+      m_input(NULL),
       m_initialized(false)
-{}
+{
+    m_input = &Input::getInstance();
+}
 
 GraphicsHandler::~GraphicsHandler()
 {
@@ -50,9 +54,9 @@ GraphicsHandler::~GraphicsHandler()
  * @param keyCallback - function called when keys are typed and the window is in focus
  * @return true if everything intialized correctly, false otherwise
  */
-bool GraphicsHandler::init(std::string title, GLFWerrorfun errorCallback, GLFWkeyfun keyCallback)
+bool GraphicsHandler::init(std::string title, GLFWerrorfun errorCallback)
 {
-    return this->_initGLFW(title, errorCallback, keyCallback) && this->_initGLEW();
+    return this->_initGLFW(title, errorCallback) && this->_initGLEW();
 }
 
 
@@ -305,6 +309,12 @@ void GraphicsHandler::setBlending(bool blend)
 }
 
 
+void GraphicsHandler::setCallback(InputCallback *callback)
+{
+    m_input->setCallback(callback);
+}
+
+
 void GraphicsHandler::setWindowShouldClose(bool close)
 {
     glfwSetWindowShouldClose(m_window, static_cast<int>(close));
@@ -330,7 +340,7 @@ void GraphicsHandler::resize(GLsizei width, GLsizei height)
 }
 
 
-bool GraphicsHandler::_initGLFW(std::string title, GLFWerrorfun errorCallback, GLFWkeyfun keyCallback)
+bool GraphicsHandler::_initGLFW(std::string title, GLFWerrorfun errorCallback)
 {
     if (!glfwInit())
         return false;
@@ -362,10 +372,9 @@ bool GraphicsHandler::_initGLFW(std::string title, GLFWerrorfun errorCallback, G
 
     glfwSwapInterval(1);
 
-    if (keyCallback)
-        glfwSetKeyCallback(m_window, keyCallback);
-    else
-        glfwSetKeyCallback(m_window, GraphicsHandler::_default_key_callback);
+    glfwSetMouseButtonCallback(m_window, Input::mouseButtonCallback);
+    glfwSetKeyCallback(m_window, Input::keyCallback);
+    glfwSetCursorPosCallback(m_window, Input::cursorPositionCallback);
 
     return true;
 }
@@ -501,14 +510,6 @@ GLuint GraphicsHandler::_loadShader(const char *vertex_path, const char *fragmen
     glDeleteShader(fragShader);
 
     return program;
-}
-
-
-void GraphicsHandler::_default_key_callback(GLFWwindow* window, int key, int, int action, int)
-{
-    std::cout << "key callback" << std::endl;
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 

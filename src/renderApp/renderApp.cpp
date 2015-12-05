@@ -7,6 +7,7 @@
 #include "renderObjects.hpp"
 #include "graphicsHandler.hpp"
 #include "camera.hpp"
+#include "renderInput.hpp"
 
 const int DEFAULT_WIDTH = 640;
 const int DEFAULT_HEIGHT = 480;
@@ -54,6 +55,8 @@ int RenderApp::execute(int argc, const char **argv)
     if (!m_graphics->init("Render App"))
         return 1;
 
+    RenderInput input;
+    m_graphics->setCallback(&input);
 
     std::string vertPath = std::string(RESOURCES_PATH) + "/shaders/default.vert";
     std::string fragPath = std::string(RESOURCES_PATH) + "/shaders/default.frag";
