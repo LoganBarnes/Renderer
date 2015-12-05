@@ -11,7 +11,7 @@ Take some light:
 
 ![A Light](renderings/lambertsBalls/emitted_only.png)
 
-And everything the light touches (a.k.a. Simba's kingdom):
+And everything the light touches (Simba's kingdom):
 
 ![Italian Flag](renderings/lambertsBalls/direct_only.png)
 
