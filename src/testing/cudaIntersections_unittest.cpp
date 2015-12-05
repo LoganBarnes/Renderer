@@ -1,6 +1,7 @@
 #include <glm/gtc/matrix_transform.hpp>
-#include "CudaFunctions.cuh"
-#include "tester.cuh"
+#include "cuda_wrappers.cuh"
+#include "cuda_random.cuh"
+#include "cuda_tester.cuh"
 #include "renderObjects.hpp"
 #include "gtest/gtest.h"
 

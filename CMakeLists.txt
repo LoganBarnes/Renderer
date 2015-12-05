@@ -8,28 +8,26 @@ set (Renderer_VERSION_MINOR 0)
 # should we use cuda functions?
 option(USE_CUDA "Use CUDA kernels if available" ON)
 
-# should we use graphics functions?
-option(USE_GRAPHICS "Use CUDA kernels if available" ON)
-
 # resource location
 set(RESOURCES_PATH "${PROJECT_SOURCE_DIR}/res")
 
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
-        "${PROJECT_SOURCE_DIR}/src/renderer-config.hpp.in"
-        "${PROJECT_BINARY_DIR}/include/renderer-config.hpp"
+    "${PROJECT_SOURCE_DIR}/src/renderApp/renderer-config.hpp.in"
+    "${PROJECT_BINARY_DIR}/include/renderApp/renderer-config.hpp"
 )
 
 # add the binary tree to the search path for include files
 # so that we will find renderer-config.hpp
 include_directories (
-        "${PROJECT_BINARY_DIR}/include"
-        "${PROJECT_SOURCE_DIR}/include"
-        "${PROJECT_SOURCE_DIR}/include/shared"
-        "${PROJECT_SOURCE_DIR}/include/renderApp"
-        # renderApp/graphics added later
+    "${PROJECT_BINARY_DIR}/include/renderApp"
+    "${PROJECT_SOURCE_DIR}/include/renderApp"
+    "${PROJECT_SOURCE_DIR}/include/glfwApp"
 )
+
+# set source files
+add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 
 ## add glm functionality
 #find_package(GLM REQUIRED)
@@ -42,8 +40,6 @@ include_directories (
 # to the qt creator build tree (which is annoying)
 include_directories("/usr/local/include/glm")
 
-if (USE_GRAPHICS)
-include_directories("${PROJECT_SOURCE_DIR}/include/renderApp/graphics")
 # add opengl functionality
 find_package(OpenGL REQUIRED)
 if (OPENGL_FOUND)
@@ -67,22 +63,28 @@ if (GLFW_FOUND)
     include_directories(${GLFW_INCLUDE_DIRS})
     set (EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARIES})
 endif (GLFW_FOUND)
-endif (USE_GRAPHICS)
 
 # create the cuda library
 if (USE_CUDA)
     find_package(CUDA REQUIRED)
-    include_directories("${PROJECT_SOURCE_DIR}/include/cuda")
-    include_directories("${PROJECT_SOURCE_DIR}/include/cuda/cuHelpers")
+    include_directories("${PROJECT_SOURCE_DIR}/include/helperCuda")
+    include_directories("${PROJECT_SOURCE_DIR}/include/renderApp/cuda")
 
-    add_subdirectory("${PROJECT_SOURCE_DIR}/src/cuda")
+    # set nvcc options
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -O3 -gencode arch=compute_30,code=sm_30")
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --compiler-options -fno-strict-aliasing -use_fast_math")
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --ptxas-options=-v")
+
+    # build CUDA library
+    cuda_add_library(CudaLib ${CUDA_SOURCE})
+    target_link_libraries(CudaLib ${CUDA_curand_LIBRARY})
 
     set (EXTRA_LIBS ${EXTRA_LIBS} CudaLib)
     include_directories("${CUDA_INCLUDE_DIRS}")
 
     # ignore warnings from 3rd party files
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${CUDA_INCLUDE_DIRS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/include/cuda/cuHelpers")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/include/helperCuda")
 endif (USE_CUDA)
 
 # compile flags
@@ -94,12 +96,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow -Wsign-conversion -Wsign-promo 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wswitch-default -Wundef -Werror -Wno-unused")
 
 # make project into library that can be used by multiple executables (such as test classes)
-# RES_FILES is ignored by cmake but they show up in the build tree
-add_subdirectory("${PROJECT_SOURCE_DIR}/src")
+
 # USED WITH QT CREATOR
 add_subdirectory("${PROJECT_SOURCE_DIR}/include") # QT
 add_subdirectory("${RESOURCES_PATH}") # QT
-add_library (RendererLib ${SOURCE} ${HEADERS} ${RES_FILES}) # QT
+add_library (RendererLib ${SOURCE} ${HEADERS} ${RES_FILES} ${CUDA_SOURCE}) # QT
 # ELSE (WHEN NOT USING QT CREATOR)
 #add_library (RendererLib ${SOURCE}) # NON-QT
 

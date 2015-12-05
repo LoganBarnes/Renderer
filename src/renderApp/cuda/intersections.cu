@@ -2,33 +2,31 @@
 #include <stdio.h>
 #include "helper_cuda.h" // includes helper_math.h
 #include "renderObjects.hpp"
-#include "intersections.cuh"
+#include "renderTypes.hpp"
 
-__constant__ int INF = 1000;
-__constant__ int EPS = 0.001;
+__constant__ float INF = 1000.0f;
+__constant__ float EPS = 1e-7f;
 
 extern "C"
 {
 
     __device__
-    int solveQuadratic(float a, float b, float c, float &t1, float &t2)
+    int solveQuadratic(float a, float b, float c, float *t1, float *t2)
     {
-        float discriminant = b * b - 4.0 * a * c;
+        float discriminant = b * b - 4.f * a * c;
 
         // Discriminant is 0. One solution exists.
         if (abs(discriminant) < EPS) // epsilon value
         {
-            if (abs(b) < EPS)
-                return 0;
+//            if (abs(b) < EPS)
+//                return 0;
 
-            if (abs(a) < EPS)
-            {
-                t1 = INF;
-                return 1;
-            }
+//            if (abs(a) < EPS)
+//            {
+//                return 0;
+//            }
 
-            // else
-            t1 = -b / (2.0 * a);
+            *t1 = -b / (2.0 * a);
             return 1;
         }
 
@@ -37,17 +35,15 @@ extern "C"
             return 0;
 
         // Discriminant is greater than 0. Two solutions exists.
-        // if (abs(a) < EPS)
-        // {
-        // 	t1 = INF;
-        // 	t2 = -INF;
-        // 	return 2;
-        // }
-        // else
+//         if (abs(a) < EPS)
+//         {
+//            return 0;
+//         }
+         else
         {
             float sqrtDisc = sqrt(discriminant);
-            t1 = (-b + sqrtDisc) / (2.0 * a);
-            t2 = (-b - sqrtDisc) / (2.0 * a);
+            *t1 = (-b + sqrtDisc) / (2.0 * a);
+            *t2 = (-b - sqrtDisc) / (2.0 * a);
         }
         return 2;
     }
@@ -63,16 +59,16 @@ extern "C"
         float c = dot(E, E) - 1.0;
 
         float t1, t2;
-        int solutions = solveQuadratic(a, b, c, t1, t2);
+        int solutions = solveQuadratic(a, b, c, &t1, &t2);
 
         if (solutions > 0)
         {
-            if (t1 > 0.0 && t1 < n.w)
+            if (t1 > EPS && t1 < n.w)
             {
                 p = E + t1 * D;
                 n = make_float4(p, t1);
             }
-            if (solutions > 1 && t2 < n.w && t2 > 0.0)
+            if (solutions > 1 && t2 < n.w && t2 > EPS)
             {
                 p = E + t2 * D;
                 n = make_float4(p, t2);

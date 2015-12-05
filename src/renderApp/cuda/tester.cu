@@ -1,7 +1,7 @@
 #include <cuda_runtime.h>
 #include "helper_cuda.h"
 #include "helper_grid.h"
-#include "random_kernel.cu"
+#include "renderRandom.cu"
 #include "intersections.cu"
 #include "renderObjects.hpp"
 

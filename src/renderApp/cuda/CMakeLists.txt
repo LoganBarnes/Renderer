@@ -9,6 +9,7 @@ set(CUDA_SOURCE
     "${CMAKE_CURRENT_SOURCE_DIR}/pathTracer.cu"
 #testing
     "${CMAKE_CURRENT_SOURCE_DIR}/tester.cu"
+    PARENT_SCOPE
 )
 
 
@@ -24,8 +25,6 @@ set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --ptxas-options=-v")
 
 cuda_add_library(CudaLib ${CUDA_SOURCE})
 target_link_libraries(CudaLib ${CUDA_curand_LIBRARY})
-
-set(CUDA_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS} PARENT_SCOPE)
 
 
 

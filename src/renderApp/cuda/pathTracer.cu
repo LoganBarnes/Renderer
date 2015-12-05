@@ -4,14 +4,9 @@
 #include "helper_grid.h"
 #include "renderObjects.hpp"
 #include "intersections.cu"
-#include "random_kernel.cu"
+#include "renderRandom.cu"
 
-__device__ const bool EMIT = true;
-__device__ const bool DIRECT = true;
-__device__ const bool DIRECT_SPEC = false;
-__device__ const bool INDIRECT = true;
-
-__device__ const float BUMP_VAL = 0.001f;
+__device__ const float BUMP_VAL = 1e-3f;
 __device__ const float PI_F = 3.141592653539f;
 
 extern "C"
@@ -145,10 +140,7 @@ extern "C"
                         max(0.f, dot(w_i, surfel->normal)) *
                         max(0.f, dot(-w_i, lightSurfel.normal / distance2));
             }
-            if (DIRECT_SPEC)
-            {
-                // TODO: implement impulses (specular)
-            }
+            // TODO: implement impulses (specular)
         }
 
         return L_o;
@@ -175,17 +167,20 @@ extern "C"
                         uint numAreaLights,
                         bool isEyeRay,
                         curandState *randState,
-                        int id)
+                        int id,
+                        bool debugEmit,
+                        bool debugDirect,
+                        bool debugIndirect)
     {
         Radiance3 L_o = make_float3(0.f);
 
         SurfaceElement surfel;
         if (intersectWorld(ray, shapes, numShapes, &surfel, -1))
         {
-            if (isEyeRay && EMIT)
+            if (isEyeRay && debugEmit)
                 L_o += *coeff * surfel.material.emitted;
 
-            if (!isEyeRay || DIRECT)
+            if (!isEyeRay || debugDirect)
             {
                 L_o += *coeff * estimateDirectLightFromAreaLights(&surfel,
                                                                  shapes,
@@ -196,11 +191,13 @@ extern "C"
                                                                  id);
             } // end DIRECT
 
-            if (!isEyeRay || INDIRECT)
+            if (!isEyeRay || debugIndirect)
             {
                 *coeff *= estimateIndirectLight(&surfel, ray, randState, id);
+                if (length(*coeff) < 1.e-9f)
+                    ray->isValid = false;
             }
-            if (!INDIRECT)
+            if (!debugIndirect)
                 ray->isValid = false;
         }
         else
@@ -230,7 +227,11 @@ extern "C"
                           uint numAreaLights,
                           dim3 texDim,
                           curandState *randState,
-                          int bounceLimit)
+                          int bounceLimit,
+                          float scale,
+                          bool debugEmit,
+                          bool debugDirect,
+                          bool debugIndirect)
     {
         // Calculate surface coordinates
         uint x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -266,7 +267,10 @@ extern "C"
                                   numAreaLights,
                                   true,
                                   randState,
-                                  id);
+                                  id,
+                                  debugEmit,
+                                  debugDirect,
+                                  debugIndirect);
 
             int iteration = 1;
             while (ray.isValid && iteration++ < bounceLimit)
@@ -279,17 +283,18 @@ extern "C"
                                       numAreaLights,
                                       false,
                                       randState,
-                                      id);
+                                      id,
+                                      debugEmit,
+                                      debugDirect,
+                                      debugIndirect);
             }
 
-            float scale = 1.f;
-            float4 result = make_float4(radiance * (1.f / scale), 1.f);
-            clamp(result, 0.f, 1.f);
+            float4 result = make_float4(radiance * scale, 1.f);
 
-            // nans?
-            result.x = result.x != result.x ? 0.f : result.x;
-            result.y = result.y != result.y ? 0.f : result.y;
-            result.z = result.z != result.z ? 0.f : result.z;
+//            // nans?
+//            result.x = result.x != result.x ? 0.f : result.x;
+//            result.y = result.y != result.y ? 0.f : result.y;
+//            result.z = result.z != result.z ? 0.f : result.z;
 
             // Write to output surface
             surf2Dwrite(result, surfObj, x * sizeof(float4), y);
@@ -317,7 +322,11 @@ extern "C"
                         uint numAreaLights,
                         dim3 texDim,
                         curandState *randState,
-                        int bounceLimit = 1000)
+                        bool debugEmit,
+                        bool debugDirect,
+                        bool debugIndirect,
+                        int bounceLimit = 1000,
+                        float scale = 1.f)
     {
         dim3 thread(32, 32);
         dim3 block(1);
@@ -332,6 +341,10 @@ extern "C"
                                               numAreaLights,
                                               texDim,
                                               randState,
-                                              bounceLimit);
+                                              bounceLimit,
+                                              scale,
+                                              debugEmit,
+                                              debugDirect,
+                                              debugIndirect);
     }
 }

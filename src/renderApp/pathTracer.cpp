@@ -5,8 +5,14 @@
 
 #ifdef USE_CUDA
 #include <cuda_runtime.h>
-#include "CudaFunctions.cuh"
+#include "cuda_wrappers.cuh"
+#include "cuda_random.cuh"
+#include "cuda_render.cuh"
 #endif
+
+const bool EMIT = true;
+const bool DIRECT = true;
+const bool INDIRECT = true;
 
 const int BOUNCE_LIMIT = 5;
 const uint64_t RAND_SEED = 1337;
@@ -192,17 +198,17 @@ void PathTracer::setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv)
 }
 
 
-void PathTracer::tracePath(const char *writeTex, GLuint width, GLuint height)
+void PathTracer::tracePath(const char *writeTex, GLuint width, GLuint height, float scaleFactor)
 {
 #ifdef USE_CUDA
-    this->_tracePathCUDA(writeTex, width, height);
+    this->_tracePathCUDA(writeTex, width, height, scaleFactor);
 #else
     this->_tracePathCPU(writeTex, width, height);
 #endif
 }
 
 #ifdef USE_CUDA
-void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height)
+void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height, float scaleFactor)
 {
     cudaGraphicsResource_t res = m_resources[tex];
 
@@ -225,7 +231,11 @@ void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height)
                    m_numAreaLights,
                    dim3(width, height),
                    m_dRandState,
-                   BOUNCE_LIMIT);
+                   EMIT,
+                   DIRECT,
+                   INDIRECT,
+                   BOUNCE_LIMIT,
+                   scaleFactor);
 
     cuda_destroySurfaceObject(surface);
     cuda_graphicsUnmapResource(&res);

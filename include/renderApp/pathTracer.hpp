@@ -37,7 +37,7 @@ public:
     void addAreaLight(ShapeType type, glm::mat4 trans, Material material);
 
     void setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv);
-    void tracePath(const char *writeTex, GLuint width, GLuint height);
+    void tracePath(const char *writeTex, GLuint width, GLuint height, float scaleFactor);
 
 private:
 
@@ -46,7 +46,7 @@ private:
     // handles OpenGL-CUDA exchanges
     std::unordered_map<const char *, cudaGraphicsResource_t> m_resources;
 
-    void _tracePathCUDA(const char *writeTex, GLuint width, GLuint height);
+    void _tracePathCUDA(const char *writeTex, GLuint width, GLuint height, float scaleFactor);
 
     float *m_dScaleViewInvEye;  // device matrix
     Shape *m_dShapes;           // device shapes

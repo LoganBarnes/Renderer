@@ -2,14 +2,10 @@
 #define CUDA_FUNCTIONS_CUH
 
 #include <cuda_runtime.h>
-#include <curand_kernel.h>
-#include <glm/glm.hpp>
 
 typedef uint32_t GLenum;
 typedef uint32_t GLuint;
 typedef unsigned int uint;
-
-struct Shape;
 
 extern "C"
 {
@@ -38,25 +34,6 @@ extern "C"
 
     void cuda_streamSynchronize(cudaStream_t stream);
     void cuda_deviceSynchronize();
-
-    /*
-     * from 'pathTracer.cu'
-     */
-    void cuda_tracePath(cudaSurfaceObject_t surface,
-                        float *scaleViewInv,
-                        Shape *shapes,
-                        uint numShapes,
-                        Shape *areaLights,
-                        uint numAreaLights,
-                        dim3 texDim,
-                        curandState *randState,
-                        int bounceLimit = 1000);
-
-    /*
-     * from 'random.cu'
-     */
-    void cuda_initCuRand(curandState *state, uint64_t seed, dim3 texDim);
-
 }
 
 #endif // CUDA_FUNCTIONS_CUH
