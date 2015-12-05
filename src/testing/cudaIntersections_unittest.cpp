@@ -28,7 +28,7 @@ protected:
 
         // allocate resources
         cuda_allocateArray(reinterpret_cast<void**>(&m_randState), DEFAULT_SAMPLES * sizeof(curandState));
-        cuda_initCuRand(m_randState, seed, dim3(DEFAULT_SAMPLES, 1));
+        cuda_initCuRand(m_randState, 0, seed, dim3(DEFAULT_SAMPLES, 1));
 
         cuda_allocateArray(reinterpret_cast<void**>(&m_dResults), DEFAULT_SAMPLES * sizeof(float3));
 

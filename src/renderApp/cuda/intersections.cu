@@ -110,7 +110,7 @@ extern "C"
         Shape s;
         surfel->index = -1;
 
-        for (int i = 0; i < MAX_DEVICE_SHAPES; ++i)
+        for (int i = 0; i < MAX_SHAPES; ++i)
         {
             if (i >= numShapes)
                 break;

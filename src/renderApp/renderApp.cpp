@@ -13,16 +13,16 @@ const int DEFAULT_WIDTH = 640;
 const int DEFAULT_HEIGHT = 480;
 
 //const int DEFAULT_WIDTH = 480;
-//const int DEFAULT_HEIGHT = 320;
+//const int DEFAULT_HEIGHT = 380;
 
-const int TEX_WIDTH = DEFAULT_WIDTH;
-const int TEX_HEIGHT = DEFAULT_HEIGHT;
+//const int TEX_WIDTH = DEFAULT_WIDTH;
+//const int TEX_HEIGHT = DEFAULT_HEIGHT;
 
 const float LIGHT_SCALING = 0.5f;
 
 // anti aliasing of sorts
-//const int TEX_WIDTH = DEFAULT_WIDTH * 2;
-//const int TEX_HEIGHT = DEFAULT_HEIGHT * 2;
+const int TEX_WIDTH = DEFAULT_WIDTH * 2;
+const int TEX_HEIGHT = DEFAULT_HEIGHT * 2;
 
 
 RenderApp::RenderApp()
@@ -81,7 +81,9 @@ int RenderApp::execute(int argc, const char **argv)
     m_pathTracer->setScaleViewInvEye(m_camera->getEye(), m_camera->getScaleViewInvMatrix());
 
     _buildScene();
+    m_pathTracer->updateShapesOnGPU();
 
+    std::cout << "Rendering..." << std::endl;
     return this->_runLoop();
 }
 
@@ -91,27 +93,28 @@ int RenderApp::_runLoop()
 //    uint counterMax = 200000000;
 //    uint counterMax = 1000000;
 //    uint counterMax = 10000;
-    uint counterMax = 10;
-    uint counter = counterMax + 1;
+//    uint counterMax = 10;
+//    uint counter = counterMax + 1;
 
     // TODO: stop rendering after convergence limit?
 
     // clear blending texture
     m_graphics->bindFramebuffer("framebuffer1");
     m_graphics->clearWindow(TEX_WIDTH, TEX_HEIGHT);
+    m_graphics->updateWindow();
 
     m_iterationWithoutClear = 1;
 
     while (!m_graphics->checkWindowShouldClose())
     {
         // temporary timer
-        if (counter < counterMax)
-        {
-            ++counter;
-            continue;
-        }
-        else
-            counter = 0;
+//        if (counter < counterMax)
+//        {
+//            ++counter;
+//            continue;
+//        }
+//        else
+//            counter = 0;
 
         // blend to texture
         m_graphics->bindFramebuffer("framebuffer2");
@@ -165,7 +168,7 @@ void RenderApp::_buildScene()
     mat.lambertianReflect = make_float3(0.117f, 0.472f, 0.115f);
     mat.etaPos = 1.f;
     mat.etaNeg = 1.f;
-    m_pathTracer->addShape(QUAD, trans, mat);
+    m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 1: right (red) wall
     trans = glm::mat4();
@@ -175,7 +178,7 @@ void RenderApp::_buildScene()
 
     mat.color = make_float3(0.610f, 0.057f, 0.062f);
     mat.lambertianReflect = make_float3(0.610f, 0.057f, 0.062f);
-    m_pathTracer->addShape(QUAD, trans, mat);
+    m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 2: ceiling
     trans = glm::mat4();
@@ -185,7 +188,7 @@ void RenderApp::_buildScene()
 
     mat.lambertianReflect = make_float3(0.730f, 0.725f, 0.729f);
     mat.color = make_float3(0.730f, 0.725f, 0.729f);
-    m_pathTracer->addShape(QUAD, trans, mat);
+    m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 3: floor
     trans = glm::mat4();
@@ -193,7 +196,7 @@ void RenderApp::_buildScene()
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.001f, 1.f));
 
-    m_pathTracer->addShape(QUAD, trans, mat);
+    m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 4: back wall
     trans = glm::mat4();
@@ -201,26 +204,26 @@ void RenderApp::_buildScene()
     trans *= glm::rotate(glm::mat4(), glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.501f, 1.f));
 
-    m_pathTracer->addShape(QUAD, trans, mat);
+    m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 5: front wall
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(0.f, 0.f, 0.5f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.501f, 1.f));
 
-    m_pathTracer->addShape(QUAD, trans, mat);
+    m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 6: close sphere
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(1.f, -1.5f, -0.5f));
 
-    m_pathTracer->addShape(SPHERE, trans, mat);
+    m_pathTracer->addShape(SPHERE, trans, mat, false);
 
     // 7: far sphere
     trans = glm::mat4();
     trans *= glm::translate(glm::mat4(), glm::vec3(-1.f, -1.5f, -2.5f));
 
-    m_pathTracer->addShape(SPHERE, trans, mat);
+    m_pathTracer->addShape(SPHERE, trans, mat, false);
 
     // 8: light
     trans = glm::mat4();
@@ -234,7 +237,7 @@ void RenderApp::_buildScene()
     mat.lambertianReflect = make_float3(0.f);
     mat.etaPos = 1.f;
     mat.etaNeg = 1.f;
-    m_pathTracer->addAreaLight(QUAD, trans, mat);
+    m_pathTracer->addAreaLight(QUAD, trans, mat, false);
 }
 
 

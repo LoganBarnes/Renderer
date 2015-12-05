@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 #include "pathTracer.hpp"
 #include "renderObjects.hpp"
 
@@ -59,18 +60,17 @@ PathTracer::~PathTracer()
 
     if (m_initialized)
         cuda_destroy();
-#else
+#endif
     if (m_hShapes)
     {
         delete[] m_hShapes;
         m_hShapes = NULL;
     }
-    if (m_hLuminaires)
+    if (m_hAreaLights)
     {
-        delete[] m_hLuminaires;
+        delete[] m_hAreaLights;
         m_hShapes = NULL;
     }
-#endif
 }
 
 
@@ -81,17 +81,37 @@ void PathTracer::init(int argc, const char **argv, GLuint width, GLuint height)
     m_initialized = true;
 
     cuda_allocateArray(reinterpret_cast<void**>(&m_dRandState), width * height * sizeof(curandState));
-    cuda_initCuRand(m_dRandState, RAND_SEED, dim3(width, height));
+
+    std::cout << "Initializing random states..." << std::endl;
+    // break up initialization to avoid timeout errors
+    GLuint partsMinus = height / 200;
+    GLuint parts = partsMinus + 1;
+    GLuint initHeight = height / parts;
+    GLuint offset;
+    for (GLuint i = 0; i < partsMinus; ++i)
+    {
+        offset = i * initHeight * width;
+        cuda_initCuRand(m_dRandState, offset, RAND_SEED, dim3(width, initHeight));
+        std::cout << "\r(" << (i+1) << "/" << parts << ")";
+    }
+    offset = partsMinus * initHeight * width;
+    GLuint finalHeight = height - (initHeight * partsMinus);
+    cuda_initCuRand(m_dRandState, offset, RAND_SEED, dim3(width, finalHeight));
+    std::cout << "\rdone   " << std::endl;
 
     cuda_allocateArray(reinterpret_cast<void**>(&m_dScaleViewInvEye), 20 * sizeof(float));
-    cuda_allocateArray(reinterpret_cast<void**>(&m_dShapes), MAX_DEVICE_SHAPES * sizeof(Shape));
-    cuda_allocateArray(reinterpret_cast<void**>(&m_dAreaLights), MAX_DEVICE_AREA_LIGHTS * sizeof(Shape));
+    cuda_allocateArray(reinterpret_cast<void**>(&m_dShapes), MAX_SHAPES * sizeof(Shape));
+    cuda_allocateArray(reinterpret_cast<void**>(&m_dAreaLights), MAX_AREA_LIGHTS * sizeof(Shape));
+
 #else
 void PathTracer::init(int, const char**)
 {
     m_initialized = true;
-    m_hShapes = new Shape[MAX_DEVICE_SHAPES];
 #endif
+
+    // host
+    m_hShapes = new Shape[MAX_SHAPES];
+    m_hAreaLights = new Shape[MAX_AREA_LIGHTS];
 }
 
 
@@ -129,9 +149,9 @@ void PathTracer::swapResources(const char *res1, const char *res2)
 }
 
 
-void PathTracer::addShape(ShapeType type, glm::mat4 trans, Material material)
+void PathTracer::addShape(ShapeType type, glm::mat4 trans, Material material, bool sendToGPU)
 {
-    if (m_numShapes >= MAX_DEVICE_SHAPES)
+    if (m_numShapes >= MAX_SHAPES)
         return;
 
     Shape shape;
@@ -145,7 +165,10 @@ void PathTracer::addShape(ShapeType type, glm::mat4 trans, Material material)
     shape.material = material;
     shape.index = m_numShapes;
 
-    cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
+    m_hShapes[m_numShapes] = shape;
+
+    if (sendToGPU)
+        cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
 #else
     shape.inv = glm::inverse(trans);
     shape.mat.color = color;
@@ -155,10 +178,10 @@ void PathTracer::addShape(ShapeType type, glm::mat4 trans, Material material)
 }
 
 
-void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, Material material)
+void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, Material material, bool sendToGPU)
 {
-    if (m_numShapes >= MAX_DEVICE_SHAPES ||
-            m_numAreaLights >= MAX_DEVICE_AREA_LIGHTS)
+    if (m_numShapes >= MAX_SHAPES ||
+            m_numAreaLights >= MAX_AREA_LIGHTS)
         return;
 
     Shape shape;
@@ -172,8 +195,14 @@ void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, Material material
     shape.material = material;
     shape.index = m_numShapes;
 
-    cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
-    cuda_copyArrayToDevice(m_dAreaLights, &shape, m_numAreaLights * sizeof(Shape), sizeof(Shape));
+    m_hShapes[m_numShapes] = shape;
+    m_hAreaLights[m_numAreaLights] = shape;
+
+    if (sendToGPU)
+    {
+        cuda_copyArrayToDevice(m_dShapes, &shape, m_numShapes * sizeof(Shape), sizeof(Shape));
+        cuda_copyArrayToDevice(m_dAreaLights, &shape, m_numAreaLights * sizeof(Shape), sizeof(Shape));
+    }
 #else
     shape.inv = glm::inverse(trans);
     shape.mat.color = color;
@@ -181,7 +210,13 @@ void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, Material material
 #endif
     ++m_numShapes;
     ++m_numAreaLights;
+}
 
+
+void PathTracer::updateShapesOnGPU()
+{
+    cuda_copyArrayToDevice(m_dShapes, m_hShapes, 0, m_numShapes * sizeof(Shape));
+    cuda_copyArrayToDevice(m_dAreaLights, m_hAreaLights, 0, m_numAreaLights * sizeof(Shape));
 }
 
 

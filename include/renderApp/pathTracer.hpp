@@ -33,13 +33,17 @@ public:
     void unregisterTexture(const char *name);
     void swapResources(const char *res1, const char *res2);
 
-    void addShape(ShapeType type, glm::mat4 trans, Material material);
-    void addAreaLight(ShapeType type, glm::mat4 trans, Material material);
+    void addShape(ShapeType type, glm::mat4 trans, Material material, bool sendToGPU = true);
+    void addAreaLight(ShapeType type, glm::mat4 trans, Material material, bool sendToGPU = true);
+    void updateShapesOnGPU();
 
     void setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv);
     void tracePath(const char *writeTex, GLuint width, GLuint height, float scaleFactor);
 
 private:
+
+    Shape *m_hShapes;           // host shapes
+    Shape *m_hAreaLights;   // host luminaires
 
 #ifdef USE_CUDA
 
@@ -58,12 +62,10 @@ private:
 
     std::unordered_map<const char *, GLuint> m_textures;
 
-    void _tracePathCPU(const char *writeTex, GLuint width, GLuint height);
-
     glm::mat4 m_hScaleViewInv;  // host matrix
     glm::vec4 m_hEye;
-    Shape *m_hShapes;           // host shapes
-    Luminaire *m_hLuminaires;   // host luminaires
+
+    void _tracePathCPU(const char *writeTex, GLuint width, GLuint height);
 
 #endif
 
