@@ -266,6 +266,37 @@ protected:
     Shape *m_dShape;
     Ray *m_dRay;
 
+    void testIntersectionPoints(ShapeType type,
+                                glm::mat4 trans,
+                                Ray *hRay,
+                                float3 expected)
+    {
+        // set shape
+        Shape hShape;
+        hShape.type = type;
+        set_float_mat4(hShape.trans, trans);
+        set_float_mat4(hShape.inv, glm::inverse(trans));
+        set_float_mat3(hShape.normInv, glm::inverse(glm::transpose(glm::mat3(trans))));
+        cuda_copyArrayToDevice(m_dShape, &hShape, 0, sizeof(Shape));
+
+        // set ray
+        cuda_copyArrayToDevice(m_dRay, hRay, 0, sizeof(Ray));
+
+        // run test
+        cuda_testSphereIntersect(m_dShape, m_dSurfel, m_dRay);
+
+        SurfaceElement hSurfel;
+        cuda_copyArrayFromDevice(&hSurfel, m_dSurfel, sizeof(SurfaceElement));
+
+        EXPECT_EQ(777, hSurfel.index);
+
+        float3 &point = hSurfel.point;
+        EXPECT_NEAR(expected.x, point.x, FLOAT_ERROR5);
+        EXPECT_NEAR(expected.y, point.y, FLOAT_ERROR5);
+        EXPECT_NEAR(expected.z, point.z, FLOAT_ERROR5);
+    }
+
+
     void testIntersectionNormals(ShapeType type,
                                  glm::mat4 trans,
                                  Ray *hRay,
@@ -399,6 +430,34 @@ TEST_F(IntersectionTest, SphereNormalsTransformedCorrect)
                             trans,
                             &hRay,
                             expected);
+
+}
+
+
+/**
+ * @brief TEST_F
+ */
+TEST_F(IntersectionTest, SphereIntersectsInsideRay)
+{
+    std::srand(std::time(0));
+
+    glm::mat4 trans = glm::mat4();
+    Ray hRay;
+    float3 expected;
+    //    float3 sp; // sphere point
+
+    for (int i = 0; i < 100; ++i)
+    {
+        hRay.orig = make_float3(0.f, 0.f, 0.f);
+        hRay.dir = normalize(
+                    make_float3(std::rand(), std::rand(), std::rand()) /
+                    static_cast<float>(RAND_MAX));
+        expected = hRay.dir;
+        testIntersectionPoints(SPHERE,
+                               trans,
+                               &hRay,
+                               expected);
+    }
 
 }
 

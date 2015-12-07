@@ -56,6 +56,14 @@ public:
      */
     virtual void handleCursorPosition(GLFWwindow*, double, double) {}
 
+    /**
+     * @brief handleScroll
+     * @param window
+     * @param xoffset
+     * @param yoffset
+     */
+    virtual void handleScroll(GLFWwindow*, double, double) {}
+
 };
 
 #endif // INPUT_CALLBACK_HPP

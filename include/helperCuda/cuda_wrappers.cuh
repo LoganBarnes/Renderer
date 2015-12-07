@@ -34,6 +34,9 @@ extern "C"
 
     void cuda_streamSynchronize(cudaStream_t stream);
     void cuda_deviceSynchronize();
+
+    void cuda_profilerStart();
+    void cuda_profilerStop();
 }
 
 #endif // CUDA_FUNCTIONS_CUH

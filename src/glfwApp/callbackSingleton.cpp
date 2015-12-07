@@ -72,6 +72,19 @@ void CallbackSingleton::mouseButtonCallback(GLFWwindow* window, int button, int 
     CallbackSingleton::getInstance().defaultMouseButtonCallback(window, button, action, mods);
 }
 
+/**
+ * @brief CallbackSingleton::scrollCallback
+ * @param window
+ * @param xoffset
+ * @param yoffset
+ */
+void CallbackSingleton::scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    CallbackSingleton::getInstance().defaultScrollCallback(window, xoffset, yoffset);
+}
+
+
+
 
 /*
  *
@@ -140,6 +153,20 @@ void CallbackSingleton::defaultMouseButtonCallback(GLFWwindow* window, int butto
     if (m_callback)
         m_callback->handleMouseButton(window, button, action, mods);
 }
+
+/**
+ * @brief CallbackSingleton::defaultScrollCallback
+ * @param window
+ * @param xoffset
+ * @param yoffset
+ */
+void CallbackSingleton::defaultScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    if (m_callback)
+        m_callback->handleScroll(window, xoffset, yoffset);
+}
+
+
 
 
 

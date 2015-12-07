@@ -21,6 +21,7 @@ public:
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
     static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
+    static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
     // the actual implementations of the callback methods
     void defaultErrorCallback(int error, const char* description);
@@ -29,6 +30,7 @@ public:
     void defaultMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
     void defaultKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     void defaultCursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
+    void defaultScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
     void setCallback(Callback *callback);
 

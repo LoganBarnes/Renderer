@@ -1,5 +1,6 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
+#include <cuda_profiler_api.h>
 #include "helper_cuda.h"
 
 typedef unsigned int uint;
@@ -93,6 +94,16 @@ extern "C"
     void cuda_deviceSynchronize()
     {
         checkCudaErrors(cudaDeviceSynchronize());
+    }
+
+    void cuda_profilerStart()
+    {
+        checkCudaErrors(cudaProfilerStart());
+    }
+
+    void cuda_profilerStop()
+    {
+        checkCudaErrors(cudaProfilerStop());
     }
 
 }

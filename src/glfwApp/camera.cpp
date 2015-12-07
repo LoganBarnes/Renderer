@@ -5,8 +5,6 @@
 #include <glm/gtx/vector_angle.hpp>
 #include "math.h"
 
-#include <iostream>
-#include <glm/gtx/string_cast.hpp>
 
 Camera::Camera()
     : m_orbitX(0.f),
@@ -27,16 +25,6 @@ Camera::Camera()
 
     m_thirdDist = 0.f;
     setFrustumMatrix();
-
-    glm::vec4 test = glm::vec4(0, 0, 0, 1);
-    glm::mat4 testM =
-            glm::rotate(glm::radians(45.f), glm::vec3(0.f, 1.f, 0.f)) *
-            glm::rotate(glm::radians(45.f), glm::vec3(1.f, 0.f, 0.f)) *
-            glm::translate(glm::vec3(0.f, 0.f, 5));
-
-    std::cout << glm::to_string(testM * test) << std::endl;
-    std::cout << glm::to_string(testM * glm::vec4(0, 1, 0, 0)) << std::endl;
-
 }
 
 Camera::~Camera()
@@ -179,6 +167,8 @@ void Camera::updateOrbit(float zoomZ, float deltaX, float deltaY)
     // x = dy and y = dx because orbits are angles around that axis
     // and deltas are translations in that direction
     m_zoomZ += zoomZ; m_orbitX += deltaY; m_orbitY += deltaX;
+    if (m_zoomZ < 0.001f)
+        m_zoomZ = 0.001f;
 
     glm::mat4 trans =
             glm::rotate(glm::radians(m_orbitY), glm::vec3(0.f, 1.f, 0.f)) *

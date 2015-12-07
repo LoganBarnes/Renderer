@@ -379,6 +379,7 @@ bool GraphicsHandler::_initGLFW(std::string title)
     glfwSetMouseButtonCallback(m_window, CallbackSingleton::mouseButtonCallback);
     glfwSetKeyCallback(m_window, CallbackSingleton::keyCallback);
     glfwSetCursorPosCallback(m_window, CallbackSingleton::cursorPositionCallback);
+    glfwSetScrollCallback(m_window, CallbackSingleton::scrollCallback);
 
     return true;
 }

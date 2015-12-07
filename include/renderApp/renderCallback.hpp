@@ -17,6 +17,7 @@ public:
     virtual void handleMouseButton(GLFWwindow* window, int button, int action, int mods);
     virtual void handleKey(GLFWwindow* window, int key, int scancode, int action, int mods);
     virtual void handleCursorPosition(GLFWwindow* window, double xpos, double ypos);
+    virtual void handleScroll(GLFWwindow* window, double xoffset, double yoffset);
 
 private:
     RenderApp *m_app;

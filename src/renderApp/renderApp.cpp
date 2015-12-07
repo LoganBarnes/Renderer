@@ -59,6 +59,15 @@ void RenderApp::rotateCamera(double deltaX, double deltaY)
 }
 
 
+void RenderApp::zoomCamera(double deltaZ)
+{
+    m_camera->updateOrbit(static_cast<float>(deltaZ * 0.25), 0.f, 0.f);
+    m_pathTracer->setScaleViewInvEye(m_camera->getEye(), m_camera->getScaleViewInvMatrix());
+
+    this->_resetBlendTexture();
+}
+
+
 //void RenderApp::resize(int width, int height)
 //{
 //    m_graphics->resize(width, height);

@@ -18,6 +18,8 @@ const bool INDIRECT = true;
 const int BOUNCE_LIMIT = 5;
 const uint64_t RAND_SEED = 1337;
 
+#define USE_CUDA_PROFILING
+
 PathTracer::PathTracer()
 #ifdef USE_CUDA
     : m_dScaleViewInvEye(NULL),
@@ -258,6 +260,9 @@ void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height, fl
     cudaSurfaceObject_t surface;
     cuda_createSurfaceObject(&surface, &dsc);
 
+#ifdef USE_CUDA_PROFILING
+    cuda_profilerStart();
+#endif
     cuda_tracePath(surface,
                    m_dScaleViewInvEye,
                    m_dShapes,
@@ -271,6 +276,9 @@ void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height, fl
                    INDIRECT,
                    BOUNCE_LIMIT,
                    scaleFactor);
+#ifdef USE_CUDA_PROFILING
+    cuda_profilerStop();
+#endif
 
     cuda_destroySurfaceObject(surface);
     cuda_graphicsUnmapResource(&res);

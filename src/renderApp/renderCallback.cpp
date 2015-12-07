@@ -81,7 +81,7 @@ void RenderInput::handleKey(GLFWwindow *window, int key, int, int action, int)
 //void RenderInput::handleCursorPosition(GLFWwindow *window, double xpos, double ypos)
 void RenderInput::handleCursorPosition(GLFWwindow*, double xpos, double ypos)
 {
-    if (m_leftMouseDown)
+    if (m_leftMouseDown && m_shiftDown)
     {
         m_app->rotateCamera(m_prevX - xpos, m_prevY - ypos);
     }
@@ -89,6 +89,17 @@ void RenderInput::handleCursorPosition(GLFWwindow*, double xpos, double ypos)
     m_prevX = xpos;
     m_prevY = ypos;
 //    std::cout << xpos << ", " << ypos << std::endl;
+}
+
+
+//void RenderInput::handleScroll(GLFWwindow* widnow, double xoffset, double yoffset)
+void RenderInput::handleScroll(GLFWwindow*, double, double yoffset)
+{
+    if (m_shiftDown)
+    {
+        m_app->zoomCamera(yoffset);
+//        std::cout << xoffset << ", " << yoffset << std::endl;
+    }
 }
 
 

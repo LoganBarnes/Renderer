@@ -15,6 +15,7 @@ public:
     virtual ~RenderApp();
 
     void rotateCamera(double deltaX, double deltaY);
+    void zoomCamera(double deltaZ);
     void resize(int width, int height);
 
     int execute(int argc, const char **argv);
