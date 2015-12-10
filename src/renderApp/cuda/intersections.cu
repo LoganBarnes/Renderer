@@ -18,14 +18,6 @@ extern "C"
         // Discriminant is 0. One solution exists.
         if (abs(discriminant) < EPS) // epsilon value
         {
-//            if (abs(b) < EPS)
-//                return 0;
-
-//            if (abs(a) < EPS)
-//            {
-//                return 0;
-//            }
-
             *t1 = -b / (2.0 * a);
             return 1;
         }
@@ -35,24 +27,21 @@ extern "C"
             return 0;
 
         // Discriminant is greater than 0. Two solutions exists.
-//         if (abs(a) < EPS)
-//         {
-//            return 0;
-//         }
-         else
-        {
-            float sqrtDisc = sqrt(discriminant);
-            *t1 = (-b + sqrtDisc) / (2.0 * a);
-            *t2 = (-b - sqrtDisc) / (2.0 * a);
-        }
+        float sqrtDisc = sqrt(discriminant);
+        *t1 = (-b + sqrtDisc) / (2.0 * a);
+        *t2 = (-b - sqrtDisc) / (2.0 * a);
         return 2;
     }
 
     __device__
-    float4 intersectSphere(float3 E, float3 D)
+    float4 intersectSphere(float3 E, float3 D, bool isEyeRay)
     {
         float4 n = make_float4(0, 0, 0, INF);
         float3 p;
+        float eDot = dot(E, E);
+
+        if (eDot < 1.0 && isEyeRay)
+            return n;
 
         float a = dot(D, D);
         float b = 2.0 * dot(D, E);
@@ -74,6 +63,8 @@ extern "C"
                 n = make_float4(p, t2);
             }
         }
+        if (eDot < 1.0)
+            n = make_float4(make_float3(-n), n.w);
 
         return n;
     }
@@ -161,7 +152,7 @@ extern "C"
 //                }
 //                break;
             case SPHERE:
-                tempN = intersectSphere(E, D);
+                tempN = intersectSphere(E, D, isEyeRay);
                 if (tempN.w < n.w)
                 {
                     n = tempN;

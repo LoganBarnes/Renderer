@@ -65,6 +65,7 @@ public:
     void setWindowShouldClose(bool close);
     bool checkWindowShouldClose();
     double getTime();
+    void setWindowSize(GLsizei width, GLsizei height);
     void resize(GLsizei width, GLsizei height);
 
 

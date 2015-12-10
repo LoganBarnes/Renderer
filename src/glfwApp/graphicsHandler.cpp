@@ -333,6 +333,13 @@ double GraphicsHandler::getTime()
 }
 
 
+void GraphicsHandler::setWindowSize(GLsizei width, GLsizei height)
+{
+    glfwSetWindowSize(m_window, width, height);
+    this->resize(width, height);
+}
+
+
 void GraphicsHandler::resize(GLsizei width, GLsizei height)
 {
     m_viewportWidth = width;

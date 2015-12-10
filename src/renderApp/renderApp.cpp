@@ -15,14 +15,14 @@
 const int DEFAULT_WIDTH = 480;
 const int DEFAULT_HEIGHT = 380;
 
-const int TEX_WIDTH = DEFAULT_WIDTH;
-const int TEX_HEIGHT = DEFAULT_HEIGHT;
+int TEX_WIDTH = DEFAULT_WIDTH;
+int TEX_HEIGHT = DEFAULT_HEIGHT;
 
 const float LIGHT_SCALING = 0.5f;
 
 // anti aliasing of sorts
-//const int TEX_WIDTH = DEFAULT_WIDTH * 2;
-//const int TEX_HEIGHT = DEFAULT_HEIGHT * 2;
+//int TEX_WIDTH = DEFAULT_WIDTH * 2;
+//int TEX_HEIGHT = DEFAULT_HEIGHT * 2;
 
 
 RenderApp::RenderApp()
@@ -88,12 +88,50 @@ void RenderApp::zoomCamera(double deltaZ)
 
 int RenderApp::execute(int argc, const char **argv)
 {
+    int width = DEFAULT_WIDTH;
+    int height = DEFAULT_HEIGHT;
+
+    bool antiAliasing = false;
+
+    if (argc > 1)
+    {
+        if (!std::strcmp("-a", argv[1]))
+            antiAliasing = true;
+        else
+        {
+            width = strtoul(argv[1], NULL, 0);
+            height = width;
+        }
+    }
+    if (argc > 2)
+    {
+        if (!std::strcmp("-a", argv[2]))
+            antiAliasing = true;
+        else
+            height = strtoul(argv[2], NULL, 0);
+    }
+    if (argc > 3 && !std::strcmp("-a", argv[3]))
+        antiAliasing = true;
+
+    TEX_WIDTH = width;
+    TEX_HEIGHT = height;
+
+    if (antiAliasing)
+    {
+        TEX_WIDTH *= 2;
+        TEX_HEIGHT *= 2;
+    }
+
+    uint texWu = static_cast<uint>(TEX_WIDTH);
+    uint texHu = static_cast<uint>(TEX_HEIGHT);
 
     if (!m_graphics->init("Render App"))
         return 1;
 
     RenderInput input(this, m_graphics->getWindow());
     m_graphics->setCallback(&input);
+
+    m_graphics->setWindowSize(width, height);
 
     std::string vertPath = std::string(RESOURCES_PATH) + "/shaders/default.vert";
     std::string fragPath = std::string(RESOURCES_PATH) + "/shaders/default.frag";
@@ -105,14 +143,14 @@ int RenderApp::execute(int argc, const char **argv)
     m_graphics->addTextureArray("currTex", TEX_WIDTH, TEX_HEIGHT);
     m_graphics->addTextureArray("blendTex1", TEX_WIDTH, TEX_HEIGHT, NULL, true);
     m_graphics->addTextureArray("blendTex2", TEX_WIDTH, TEX_HEIGHT, NULL, true);
-    m_graphics->addFramebuffer("framebuffer1", TEX_WIDTH, TEX_HEIGHT, "blendTex1");
-    m_graphics->addFramebuffer("framebuffer2", TEX_WIDTH, TEX_HEIGHT, "blendTex2");
+    m_graphics->addFramebuffer("framebuffer1", texWu, texHu, "blendTex1");
+    m_graphics->addFramebuffer("framebuffer2", texWu, texHu, "blendTex2");
 
     m_camera->setAspectRatio(
-                static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT));
+                static_cast<float>(width) / static_cast<float>(height));
     m_camera->updateOrbit(7.f, 0.f, 0.f);
 
-    m_pathTracer->init(argc, argv, TEX_WIDTH, TEX_HEIGHT);
+    m_pathTracer->init(argc, argv, texWu, texHu);
 
     m_pathTracer->register2DTexture("currTex", m_graphics->getTexture("currTex"));
     m_pathTracer->setScaleViewInvEye(m_camera->getEye(), m_camera->getScaleViewInvMatrix());
@@ -150,7 +188,7 @@ int RenderApp::_runLoop()
 
         // blend to texture
         m_graphics->bindFramebuffer("framebuffer2");
-        m_pathTracer->tracePath("currTex", TEX_WIDTH, TEX_HEIGHT, LIGHT_SCALING);
+        m_pathTracer->tracePath("currTex", static_cast<uint>(TEX_WIDTH), static_cast<uint>(TEX_HEIGHT), LIGHT_SCALING);
         this->_render("default", "currTex", m_iterationWithoutClear++, true, "blendTex1");
 
         // render texture
