@@ -32,6 +32,9 @@ private:
     PathTracer *m_pathTracer;
     Camera *m_camera;
 
+    int m_texWidth;
+    int m_texHeight;
+
     double m_loopFPS;
     int m_iterationWithoutClear;
 };

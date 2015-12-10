@@ -15,14 +15,8 @@
 const int DEFAULT_WIDTH = 480;
 const int DEFAULT_HEIGHT = 380;
 
-int TEX_WIDTH = DEFAULT_WIDTH;
-int TEX_HEIGHT = DEFAULT_HEIGHT;
-
 const float LIGHT_SCALING = 0.5f;
 
-// anti aliasing of sorts
-//int TEX_WIDTH = DEFAULT_WIDTH * 2;
-//int TEX_HEIGHT = DEFAULT_HEIGHT * 2;
 
 
 RenderApp::RenderApp()
@@ -113,17 +107,17 @@ int RenderApp::execute(int argc, const char **argv)
     if (argc > 3 && !std::strcmp("-a", argv[3]))
         antiAliasing = true;
 
-    TEX_WIDTH = width;
-    TEX_HEIGHT = height;
+    m_texWidth = width;
+    m_texHeight = height;
 
     if (antiAliasing)
     {
-        TEX_WIDTH *= 2;
-        TEX_HEIGHT *= 2;
+        m_texWidth *= 2;
+        m_texHeight *= 2;
     }
 
-    uint texWu = static_cast<uint>(TEX_WIDTH);
-    uint texHu = static_cast<uint>(TEX_HEIGHT);
+    uint texWu = static_cast<uint>(m_texWidth);
+    uint texHu = static_cast<uint>(m_texHeight);
 
     if (!m_graphics->init("Render App"))
         return 1;
@@ -140,9 +134,9 @@ int RenderApp::execute(int argc, const char **argv)
     GLfloat screenData[8] = {-1, 1, -1, -1, 1, 1, 1, -1};
     m_graphics->addUVBuffer("fullscreen", "default", screenData, 8);
 
-    m_graphics->addTextureArray("currTex", TEX_WIDTH, TEX_HEIGHT);
-    m_graphics->addTextureArray("blendTex1", TEX_WIDTH, TEX_HEIGHT, NULL, true);
-    m_graphics->addTextureArray("blendTex2", TEX_WIDTH, TEX_HEIGHT, NULL, true);
+    m_graphics->addTextureArray("currTex", m_texWidth, m_texHeight);
+    m_graphics->addTextureArray("blendTex1", m_texWidth, m_texHeight, NULL, true);
+    m_graphics->addTextureArray("blendTex2", m_texWidth, m_texHeight, NULL, true);
     m_graphics->addFramebuffer("framebuffer1", texWu, texHu, "blendTex1");
     m_graphics->addFramebuffer("framebuffer2", texWu, texHu, "blendTex2");
 
@@ -188,7 +182,7 @@ int RenderApp::_runLoop()
 
         // blend to texture
         m_graphics->bindFramebuffer("framebuffer2");
-        m_pathTracer->tracePath("currTex", static_cast<uint>(TEX_WIDTH), static_cast<uint>(TEX_HEIGHT), LIGHT_SCALING);
+        m_pathTracer->tracePath("currTex", static_cast<uint>(m_texWidth), static_cast<uint>(m_texHeight), LIGHT_SCALING);
         this->_render("default", "currTex", m_iterationWithoutClear++, true, "blendTex1");
 
         // render texture
@@ -211,7 +205,7 @@ void RenderApp::_resetBlendTexture()
 {
     // clear blending texture
     m_graphics->bindFramebuffer("framebuffer1");
-    m_graphics->clearWindow(TEX_WIDTH, TEX_HEIGHT);
+    m_graphics->clearWindow(m_texWidth, m_texHeight);
 
     // reset iteration number
     m_iterationWithoutClear = 1;
@@ -221,7 +215,7 @@ void RenderApp::_resetBlendTexture()
 void RenderApp::_render(const char *program, const char *mainTex, int iteration, bool texSize, const char *blendTex)
 {
     if (texSize)
-        m_graphics->clearWindow(TEX_WIDTH, TEX_HEIGHT);
+        m_graphics->clearWindow(m_texWidth, m_texHeight);
     else
         m_graphics->clearWindow();
     m_graphics->useProgram(program);
