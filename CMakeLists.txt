@@ -6,7 +6,10 @@ set (Renderer_VERSION_MAJOR 1)
 set (Renderer_VERSION_MINOR 0)
 
 # should we use cuda functions?
-option(USE_CUDA "Use CUDA kernels if available" ON)
+option(USE_CUDA "Use CUDA kernels if available" OFF)
+
+# should we show the output graphically?
+option(USE_GRAPHICS "Use CUDA kernels if available" ON)
 
 # resource location
 set(RESOURCES_PATH "${PROJECT_SOURCE_DIR}/res")
@@ -30,39 +33,42 @@ include_directories (
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 
 ## add glm functionality
-#find_package(GLM REQUIRED)
-#if (GLM_FOUND)
-#    message("-- Found GLM: ${GLM_INCLUDE_DIRS}")
-#    include_directories("${GLM_INCLUDE_DIRS}")
-#endif (GLM_FOUND)
-
-# using the above method ^ adds the /usr/local/include dir
-# to the qt creator build tree (which is annoying)
 include_directories("/usr/local/include/glm")
 
-# add opengl functionality
-find_package(OpenGL REQUIRED)
-if (OPENGL_FOUND)
-    message("-- Found OpenGL: ${OPENGL_INCLUDE_DIR}")
-    include_directories(${OPENGL_INCLUDE_DIR})
-    set (EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
-endif (OPENGL_FOUND)
+if (USE_GRAPHICS)
+    # add opengl functionality
+    find_package(OpenGL REQUIRED)
+    if (OPENGL_FOUND)
+        include_directories(${OPENGL_INCLUDE_DIR})
+        set (EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
+    endif (OPENGL_FOUND)
 
-# add glew functionality
-find_package(GLEW REQUIRED)
-if (GLEW_FOUND) # GLEW has it's own 'found' message
-    include_directories(${GLEW_INCLUDE_DIRS})
-    set (EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
-endif (GLEW_FOUND)
+    # add glew functionality
+    find_package(GLEW REQUIRED)
+    if (GLEW_FOUND) # GLEW has it's own 'found' message
+        include_directories(${GLEW_INCLUDE_DIRS})
+        set (EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
+    endif (GLEW_FOUND)
 
-# add glfw3 functionality
-find_package(PkgConfig REQUIRED)
-pkg_search_module(GLFW REQUIRED glfw3)
-if (GLFW_FOUND)
-    message("-- Found GLFW: ${GLFW_INCLUDE_DIRS}")
-    include_directories(${GLFW_INCLUDE_DIRS})
-    set (EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARIES})
-endif (GLFW_FOUND)
+    # add glfw3 functionality
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(GLFW REQUIRED glfw3)
+    if (GLFW_FOUND)
+        message("-- Found GLFW: ${GLFW_INCLUDE_DIRS}")
+        include_directories(${GLFW_INCLUDE_DIRS})
+        set (EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARIES})
+    endif (GLFW_FOUND)
+
+else (USE_GRAPHICS)
+    # use ncurses terminal functionality
+    set(CURSES_NEED_NCURSES TRUE)
+    find_package(Curses REQUIRED)
+    if (CURSES_FOUND)
+        include_directories(${CURSES_INCLUDE_DIR})
+        set (EXTRA_LIBS ${EXTRA_LIBS} ${CURSES_LIBRARY})
+    endif (CURSES_FOUND)
+
+endif (USE_GRAPHICS)
 
 # create the cuda library
 if (USE_CUDA)
@@ -85,6 +91,13 @@ if (USE_CUDA)
     # ignore warnings from 3rd party files
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${CUDA_INCLUDE_DIRS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/include/helperCuda")
+
+else (USE_CUDA)
+    # use pthread library
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    find_package(Threads REQUIRED)
+    set (EXTRA_LIBS ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+
 endif (USE_CUDA)
 
 # compile flags

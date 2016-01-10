@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include "renderTypes.hpp"
 #include "renderer-config.hpp"
+
 #ifdef USE_CUDA
 #include "helper_math.h"
 
@@ -78,7 +79,12 @@ inline __host__ __device__ void transpose_float_mat3(float3 *out, float3 *in)
     out[2] = make_float3(in[0].z, in[1].z, in[2].z);
 }
 
+#else
 
+typedef glm::vec3 float3;
+typedef unsigned int uint;
+
+#endif // USE_CUDA
 
 /*
  * Object definitions
@@ -111,6 +117,15 @@ struct SurfaceElement
     int index;
 };
 
+struct PathChoice
+{
+    Radiance3 radiance;
+    float coeff;
+    Ray scatter;
+};
+
+#ifdef USE_CUDA
+
 struct Shape
 {
     ShapeType type;
@@ -121,44 +136,19 @@ struct Shape
     uint index;
 };
 
-struct PathChoice
-{
-    Radiance3 radiance;
-    float coeff;
-    Ray scatter;
-};
-
 #else
 
-/*
- * Object definitions
- */
-
-struct Ray
-{
-    glm::vec3 orig;
-    glm::vec3 dir;
-};
-
-struct Material
-{
-    glm::vec4 color;
-};
-
-struct SurfaceElement
+struct Shape
 {
     ShapeType type;
+    glm::mat4 trans;
     glm::mat4 inv;
-    Material mat;
+    glm::mat3 normInv;
+    Material material;
+    uint index;
 };
 
-struct Luminaire
-{
-    LuminaireType type;
-    glm::mat4 radiance;
-};
-
-#endif // USE_CUDA
+#endif
 
 
 #endif // RENDER_OBJECTS_H

@@ -36,5 +36,10 @@ else (USE_CUDA)
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderCallback.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderObjects.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/renderTypes.hpp"
+        # renderApp/cpu
+        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/cpu/cpu_render.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/cpu/cpu_tester.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/cpu/cpu_random.hpp"
+        PARENT_SCOPE
     )
 endif (USE_CUDA)

@@ -8,9 +8,21 @@
 
 typedef unsigned int GLuint;
 
+
 #ifdef USE_CUDA
 #include <curand_kernel.h>
 typedef struct cudaGraphicsResource *cudaGraphicsResource_t;
+#else
+#include <pthread.h>
+
+struct ArgData
+{
+    float *data;
+    GLuint start;
+    GLuint end;
+    float alpha;
+    bool isMainThread;
+};
 #endif
 
 struct Shape;
@@ -62,10 +74,16 @@ private:
 
     std::unordered_map<const char *, GLuint> m_textures;
 
+    pthread_t *m_threads;
+    ArgData *m_args;
+
+    pthread_attr_t m_attr;
+    GLuint m_numThreads;
+
     glm::mat4 m_hScaleViewInv;  // host matrix
     glm::vec4 m_hEye;
 
-    void _tracePathCPU(const char *writeTex, GLuint width, GLuint height);
+    void _tracePathCPU(const char *writeTex, GLuint width, GLuint height, float scaleFactor);
 
 #endif
 

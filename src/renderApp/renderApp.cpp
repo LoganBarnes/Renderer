@@ -18,6 +18,14 @@ const int DEFAULT_HEIGHT = 380;
 const float LIGHT_SCALING = 0.5f;
 
 
+#ifdef USE_CUDA
+float3 modFloat3(float x) { return make_float3(x); }
+float3 modFloat3(float x, float y, float z) { return make_float3(x, y, z); }
+#else
+glm::vec3 modFloat3(float x) { return glm::vec3(x); }
+glm::vec3 modFloat3(float x, float y, float z) { return glm::vec3(x, y, z); }
+#endif
+
 
 RenderApp::RenderApp()
     : m_graphics(NULL),
@@ -236,10 +244,10 @@ void RenderApp::_buildScene()
     trans *= glm::scale(glm::mat4(), glm::vec3(2.5f, 2.5f, 1.f));
 
     Material mat;
-    mat.power = make_float3(0.f);
-    mat.emitted = make_float3(0.f);
-    mat.color = make_float3(0.117f, 0.472f, 0.115f);
-    mat.lambertianReflect = make_float3(0.117f, 0.472f, 0.115f);
+    mat.power = modFloat3(0.f);
+    mat.emitted = modFloat3(0.f);
+    mat.color = modFloat3(0.117f, 0.472f, 0.115f);
+    mat.lambertianReflect = modFloat3(0.117f, 0.472f, 0.115f);
     mat.etaPos = 1.f;
     mat.etaNeg = 1.f;
     m_pathTracer->addShape(QUAD, trans, mat, false);
@@ -250,8 +258,8 @@ void RenderApp::_buildScene()
     trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.5f, 2.5f, 1.f));
 
-    mat.color = make_float3(0.610f, 0.057f, 0.062f);
-    mat.lambertianReflect = make_float3(0.610f, 0.057f, 0.062f);
+    mat.color = modFloat3(0.610f, 0.057f, 0.062f);
+    mat.lambertianReflect = modFloat3(0.610f, 0.057f, 0.062f);
     m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 2: ceiling
@@ -260,8 +268,8 @@ void RenderApp::_buildScene()
     trans *= glm::rotate(glm::mat4(), glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(2.501f, 2.501f, 1.f));
 
-    mat.lambertianReflect = make_float3(0.730f, 0.725f, 0.729f);
-    mat.color = make_float3(0.730f, 0.725f, 0.729f);
+    mat.lambertianReflect = modFloat3(0.730f, 0.725f, 0.729f);
+    mat.color = modFloat3(0.730f, 0.725f, 0.729f);
     m_pathTracer->addShape(QUAD, trans, mat, false);
 
     // 3: floor
@@ -305,10 +313,10 @@ void RenderApp::_buildScene()
     trans *= glm::rotate(glm::mat4(), glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
     trans *= glm::scale(glm::mat4(), glm::vec3(0.5f, 0.3, 1.f));
 
-    mat.color = make_float3(0.f);
-    mat.power = make_float3(18.4f, 15.6f, 8.f) * 3.f;
-    mat.emitted = mat.power / (M_PI * 0.5f * 0.3f); // pi * area
-    mat.lambertianReflect = make_float3(0.f);
+    mat.color = modFloat3(0.f);
+    mat.power = modFloat3(18.4f, 15.6f, 8.f) * 3.f;
+    mat.emitted = mat.power / static_cast<float>(M_PI * 0.5f * 0.3f); // pi * area
+    mat.lambertianReflect = modFloat3(0.f);
     mat.etaPos = 1.f;
     mat.etaNeg = 1.f;
 
@@ -320,7 +328,7 @@ void RenderApp::_buildScene()
 //    trans *= glm::rotate(glm::mat4(), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
 //    trans *= glm::scale(glm::mat4(), glm::vec3(0.5f, 0.3, 1.f));
 
-//    mat.power = make_float3(18.4f, 15.6f, 8.f) * 3.f;
+//    mat.power = modFloat3(18.4f, 15.6f, 8.f) * 3.f;
 //    mat.emitted = mat.power / (M_PI * 0.5f * 0.3f); // pi * area
 //    m_pathTracer->addAreaLight(QUAD, trans, mat, false);
 
