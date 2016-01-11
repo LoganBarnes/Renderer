@@ -255,7 +255,7 @@ void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height, fl
 
 #else
 
-#include <unistd.h>
+#include "cpu_render.hpp"
 
 PathTracer::PathTracer()
     : m_hShapes(NULL),
@@ -264,25 +264,12 @@ PathTracer::PathTracer()
       m_numShapes(0),
       m_numAreaLights(0),
       m_initialized(false)
-{
-    m_numThreads = sysconf( _SC_NPROCESSORS_ONLN );
-    m_threads = new pthread_t[m_numThreads - 1];
-    m_args = new ArgData[m_numThreads];
-
-    // Initialize and set thread joinable
-    pthread_attr_init(&m_attr);
-    pthread_attr_setdetachstate(&m_attr, PTHREAD_CREATE_JOINABLE);
-}
+{}
 
 
 PathTracer::~PathTracer()
 {
-    pthread_attr_destroy(&m_attr);
-    if (m_threads)
-    {
-        delete[] m_threads;
-        m_threads = NULL;
-    }
+    cpu_destroy(&m_threads, &m_attr);
     if (m_hShapes)
     {
         delete[] m_hShapes;
@@ -298,6 +285,9 @@ PathTracer::~PathTracer()
 
 void PathTracer::init(int, const char**, GLuint, GLuint)
 {
+    cpu_init(&m_numThreads, &m_threads, &m_attr);
+    m_args = new ThreadData[m_numThreads];
+
     m_initialized = true;
 
     // host
@@ -398,44 +388,23 @@ void PathTracer::_tracePathCPU(const char *writeTex, GLuint width, GLuint height
 
     float *data = new float[size];
 
-    uint div = numPix / m_numThreads;
-    uint end = 0;
-
-    int rc;
-
-    for (uint i = 0; i < m_numThreads - 1; ++i)
-    {
-        ArgData &argData = m_args[i];
-        argData.data = data;
-        argData.alpha = 1.f * scaleFactor;
-
-        argData.start = end;
-        end = (i+1) * div;
-        argData.end = end;
-        argData.isMainThread = false;
-        rc = pthread_create(&m_threads[i], &m_attr, asyncPathTrace, reinterpret_cast<void*>(&argData));
-        if (rc){
-           std::cout << "ERROR: failed creating thread, " << rc << std::endl;
-        }
-    }
-    ArgData &argData = m_args[m_numThreads-1];
-    argData.data = data;
-    argData.alpha = 1.f * scaleFactor;
-
-    argData.start = 0;
-    end = numPix;
-    argData.end = end;
-    argData.isMainThread = true;
-    asyncPathTrace(reinterpret_cast<void*>(&argData));
-
-    void *status;
-    for (uint i = 0; i < m_numThreads - 1; ++i)
-    {
-        rc = pthread_join(m_threads[i], &status);
-        if (rc){
-           std::cout << "ERROR: unable to join," << rc << std::endl;
-        }
-    }
+    cpu_tracePath(data,
+                  m_hScaleViewInv,
+                  m_hEye,
+                  m_hShapes,
+                  m_numShapes,
+                  m_hAreaLights,
+                  m_numAreaLights,
+                  glm::ivec3(width, height, 1),
+                  m_numThreads,
+                  m_threads,
+                  m_attr,
+                  m_args,
+                  EMIT,
+                  DIRECT,
+                  INDIRECT,
+                  BOUNCE_LIMIT,
+                  scaleFactor);
 
 #ifdef USE_GRAPHICS
     glBindTexture(GL_TEXTURE_2D, m_textures[writeTex]);
@@ -446,25 +415,6 @@ void PathTracer::_tracePathCPU(const char *writeTex, GLuint width, GLuint height
     delete[] data;
 }
 
-
-void *asyncPathTrace(void *args)
-{
-    ArgData *argData = reinterpret_cast<ArgData*>(args);
-
-    float *data = argData->data;
-    for (GLuint i = argData->start; i < argData->end; ++i)
-    {
-        data[i*4  ] = 0.f;
-        data[i*4+1] = 1.f;
-        data[i*4+2] = 0.5f;
-        data[i*4+3] = argData->alpha;
-    }
-
-    if (argData->isMainThread)
-        return NULL;
-
-    pthread_exit(NULL);
-}
 
 
 #endif

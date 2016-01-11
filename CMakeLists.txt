@@ -9,7 +9,7 @@ set (Renderer_VERSION_MINOR 0)
 option(USE_CUDA "Use CUDA kernels if available" OFF)
 
 # should we show the output graphically?
-option(USE_GRAPHICS "Use CUDA kernels if available" ON)
+option(USE_GRAPHICS "Use CUDA kernels if available" ON) # haven't implemented 'OFF' version yet
 
 # resource location
 set(RESOURCES_PATH "${PROJECT_SOURCE_DIR}/res")
@@ -70,8 +70,8 @@ else (USE_GRAPHICS)
 
 endif (USE_GRAPHICS)
 
-# create the cuda library
 if (USE_CUDA)
+    # create the cuda library
     find_package(CUDA REQUIRED)
     include_directories("${PROJECT_SOURCE_DIR}/include/helperCuda")
     include_directories("${PROJECT_SOURCE_DIR}/include/renderApp/cuda")
@@ -96,6 +96,8 @@ else (USE_CUDA)
     # use pthread library
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     find_package(Threads REQUIRED)
+
+    include_directories("${PROJECT_SOURCE_DIR}/include/renderApp/cpu")
     set (EXTRA_LIBS ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 
 endif (USE_CUDA)

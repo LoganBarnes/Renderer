@@ -41,7 +41,7 @@ else (USE_CUDA)
         #renderApp/cpu
         "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/cpu/renderRandom.cpp"
 #        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/cpu/intersections.cpp"
-#        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/cpu/pathTracer.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/cpu/pathTracer.cpp"
         #testing
 #        "${CMAKE_CURRENT_SOURCE_DIR}/renderApp/cpu/tester.cpp"
         PARENT_SCOPE

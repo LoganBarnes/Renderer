@@ -14,15 +14,8 @@ typedef unsigned int GLuint;
 typedef struct cudaGraphicsResource *cudaGraphicsResource_t;
 #else
 #include <pthread.h>
+struct ThreadData;
 
-struct ArgData
-{
-    float *data;
-    GLuint start;
-    GLuint end;
-    float alpha;
-    bool isMainThread;
-};
 #endif
 
 struct Shape;
@@ -75,7 +68,7 @@ private:
     std::unordered_map<const char *, GLuint> m_textures;
 
     pthread_t *m_threads;
-    ArgData *m_args;
+    ThreadData *m_args;
 
     pthread_attr_t m_attr;
     GLuint m_numThreads;

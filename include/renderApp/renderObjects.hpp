@@ -148,6 +148,16 @@ struct Shape
     uint index;
 };
 
+struct ThreadData
+{
+    float *data;
+    uint rowStart;
+    uint rowEnd;
+    uint colWidth;
+    float alpha;
+    bool isMainThread;
+};
+
 #endif
 
 
