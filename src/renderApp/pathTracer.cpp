@@ -1,5 +1,5 @@
 #include <GL/glew.h>
-#include <glm/gtc/type_ptr.hpp>
+#include <gtc/type_ptr.hpp>
 #include <iostream>
 #include "pathTracer.hpp"
 #include "renderObjects.hpp"

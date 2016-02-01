@@ -1,7 +1,7 @@
 #ifndef RENDER_OBJECTS_H
 #define RENDER_OBJECTS_H
 
-#include <glm/glm.hpp>
+#include <glm.hpp>
 #include "renderTypes.hpp"
 #include "renderer-config.hpp"
 

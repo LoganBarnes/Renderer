@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <iostream>
-#include <glm/glm.hpp>
+#include <glm.hpp>
 #include "renderObjects.hpp"
 //#include "intersections.cu"
 #include "renderRandom.cpp"

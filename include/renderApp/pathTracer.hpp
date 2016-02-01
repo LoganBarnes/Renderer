@@ -2,7 +2,7 @@
 #define PATH_TRACER_H
 
 #include <unordered_map>
-#include <glm/glm.hpp>
+#include "glm.hpp"
 #include "renderTypes.hpp"
 #include "renderer-config.hpp"
 

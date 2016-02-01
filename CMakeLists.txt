@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.0.0)
 project (Renderer)
 
 # The version number.
@@ -33,7 +33,18 @@ include_directories (
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 
 ## add glm functionality
-include_directories("/usr/local/include/glm")
+set(GLM_DIR "${PROJECT_SOURCE_DIR}/../thirdparty/glm")
+if (EXISTS ${GLM_DIR})
+    message("-FOUND: GLM")
+    add_subdirectory("${GLM_DIR}" "${PROJECT_SOURCE_DIR}/../thirdparty/bin/glm")
+    include_directories("${GLM_DIR}/glm")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm/detail")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm/gtx")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm/gtc")
+else()
+    message("Couldn't find the GLM library: Make sure the thirdparty directory is located in the same folder as the project directory")
+endif()
 
 if (USE_GRAPHICS)
     # add opengl functionality
@@ -51,13 +62,18 @@ if (USE_GRAPHICS)
     endif (GLEW_FOUND)
 
     # add glfw3 functionality
-    find_package(PkgConfig REQUIRED)
-    pkg_search_module(GLFW REQUIRED glfw3)
-    if (GLFW_FOUND)
-        message("-- Found GLFW: ${GLFW_INCLUDE_DIRS}")
-        include_directories(${GLFW_INCLUDE_DIRS})
-        set (EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARIES})
-    endif (GLFW_FOUND)
+    if (EXISTS "${PROJECT_SOURCE_DIR}/../thirdparty/glfw")
+        add_subdirectory(
+            "${PROJECT_SOURCE_DIR}/../thirdparty/glfw" # glfw src location
+            "${PROJECT_SOURCE_DIR}/../thirdparty/bin/glfw" # glfw binary location
+            )
+        include_directories("${PROJECT_SOURCE_DIR}/../thirdpart/glfw/include")
+        set (EXTRA_LIBS ${EXTRA_LIBS} glfw ${GLFW_LIBRARIES})
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/../thirdpart/glfw/include")
+    else ()
+        message("Couldn't find the GLFW library: Make sure the thirdparty directory is located in the same folder as the project directory")
+    endif ()
+
 
 else (USE_GRAPHICS)
     # use ncurses terminal functionality
@@ -128,25 +144,25 @@ target_link_libraries (Renderer RendererLib ${EXTRA_LIBS})
 
 
 
-# testing
-find_package(GTEST)
-if (GTEST_FOUND)
-    include_directories(${GTEST_INCLUDE_DIRS})
+# # testing
+# find_package(GTEST)
+# if (GTEST_FOUND)
+#     include_directories(${GTEST_INCLUDE_DIRS})
 
-    # GMock
-    include_directories("/usr/local/include/gmock")
-    set(GMOCK_BOTH_LIBRARIES "/usr/local/lib/libgmock.a" "/usr/local/lib/libgmock_main.a")
+#     # GMock
+#     include_directories("/usr/local/include/gmock")
+#     set(GMOCK_BOTH_LIBRARIES "/usr/local/lib/libgmock.a" "/usr/local/lib/libgmock_main.a")
 
-    add_subdirectory("${PROJECT_SOURCE_DIR}/src/testing")
-    foreach( testsourcefile ${TEST_SOURCES} )
-        # I used a simple string replace, to cut off .cpp and path.
-        string( REPLACE ".cpp" "" testname ${testsourcefile} )
-        string( REPLACE "${PROJECT_SOURCE_DIR}/src/testing/" "" testname ${testname} )
-        add_executable( ${testname} ${testsourcefile} )
-        # Make sure lib is linked to each app
-        target_link_libraries( ${testname} RendererLib ${EXTRA_LIBS} ${GTEST_BOTH_LIBRARIES} ${GMOCK_BOTH_LIBRARIES})
-    endforeach( testsourcefile ${TEST_SOURCES} )
-endif (GTEST_FOUND)
+#     add_subdirectory("${PROJECT_SOURCE_DIR}/src/testing")
+#     foreach( testsourcefile ${TEST_SOURCES} )
+#         # I used a simple string replace, to cut off .cpp and path.
+#         string( REPLACE ".cpp" "" testname ${testsourcefile} )
+#         string( REPLACE "${PROJECT_SOURCE_DIR}/src/testing/" "" testname ${testname} )
+#         add_executable( ${testname} ${testsourcefile} )
+#         # Make sure lib is linked to each app
+#         target_link_libraries( ${testname} RendererLib ${EXTRA_LIBS} ${GTEST_BOTH_LIBRARIES} ${GMOCK_BOTH_LIBRARIES})
+#     endforeach( testsourcefile ${TEST_SOURCES} )
+# endif (GTEST_FOUND)
 
 
 

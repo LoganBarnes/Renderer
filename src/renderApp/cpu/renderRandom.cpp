@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <time.h>
-#include <glm/glm.hpp>
+#include <glm.hpp>
 #include "renderObjects.hpp"
 
 

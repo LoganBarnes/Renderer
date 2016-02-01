@@ -43,7 +43,7 @@ public:
 
     void addUVBuffer(const char *buffer, const char *program, GLfloat *data, GLuint size, bool dynamic = false);
 
-    void addFramebuffer(const char *buffer, GLuint width, GLuint height, const char *texture);
+    void addFramebuffer(const char *buffer, GLsizei width, GLsizei height, const char *texture);
     void bindFramebuffer(const char *name);
     void swapFramebuffers(const char *fbo1, const char *fbo2);
 

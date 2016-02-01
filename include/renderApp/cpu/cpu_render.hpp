@@ -1,7 +1,7 @@
 #ifndef CPU_RENDER_HPP
 #define CPU_RENDER_HPP
 
-#include <glm/glm.hpp>
+#include <glm.hpp>
 #include <pthread.h>
 #include <unistd.h>
 

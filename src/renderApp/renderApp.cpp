@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <iostream>
-#include <glm/gtc/matrix_transform.hpp>
+#include "gtc/matrix_transform.hpp"
 #include "renderApp.hpp"
 #include "pathTracer.hpp"
 #include "renderer-config.hpp"
@@ -145,8 +145,8 @@ int RenderApp::execute(int argc, const char **argv)
     m_graphics->addTextureArray("currTex", m_texWidth, m_texHeight);
     m_graphics->addTextureArray("blendTex1", m_texWidth, m_texHeight, NULL, true);
     m_graphics->addTextureArray("blendTex2", m_texWidth, m_texHeight, NULL, true);
-    m_graphics->addFramebuffer("framebuffer1", texWu, texHu, "blendTex1");
-    m_graphics->addFramebuffer("framebuffer2", texWu, texHu, "blendTex2");
+    m_graphics->addFramebuffer("framebuffer1", m_texWidth, m_texWidth, "blendTex1");
+    m_graphics->addFramebuffer("framebuffer2", m_texWidth, m_texWidth, "blendTex2");
 
     m_camera->setAspectRatio(
                 static_cast<float>(width) / static_cast<float>(height));

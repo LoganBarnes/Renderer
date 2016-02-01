@@ -1,5 +1,5 @@
 #define GLFW_INCLUDE_GL_3
-#include <IL/il.h>
+// #include <IL/il.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <string>
@@ -141,7 +141,16 @@ void GraphicsHandler::addUVBuffer(const char *name, const char *program, GLfloat
     glGenVertexArrays(1, &(buffer.vao));
     glBindVertexArray((buffer.vao));
 
-    int position = glGetAttribLocation(m_programs[program], "aUV");
+    int pos = glGetAttribLocation(m_programs[program], "aUV");
+    if (pos < 0)
+    {
+        std::cerr << "attrib location not found for program " << program << std::endl;
+        // Unbind buffers and return
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        return;
+    }
+    GLuint position = static_cast<GLuint>(pos);
 
     glEnableVertexAttribArray(position);
     glVertexAttribPointer(
@@ -161,7 +170,7 @@ void GraphicsHandler::addUVBuffer(const char *name, const char *program, GLfloat
 }
 
 
-void GraphicsHandler::addFramebuffer(const char *buffer, GLuint width, GLuint height, const char *texture)
+void GraphicsHandler::addFramebuffer(const char *buffer, GLsizei width, GLsizei height, const char *texture)
 {
     if (m_framebuffers.count(buffer))
     {

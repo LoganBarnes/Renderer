@@ -1,8 +1,8 @@
 #include "camera.hpp"
 
 #define GLM_FORCE_RADIANS
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtx/vector_angle.hpp>
+#include "gtx/rotate_vector.hpp"
+#include "gtx/vector_angle.hpp"
 #include "math.h"
 
 
