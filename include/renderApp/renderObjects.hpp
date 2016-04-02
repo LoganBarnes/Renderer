@@ -133,7 +133,7 @@ struct Shape
     float4 inv[4];
     float3 normInv[3];
     Material material;
-    uint index;
+    int index;
 };
 
 #else
@@ -145,7 +145,7 @@ struct Shape
     glm::mat4 inv;
     glm::mat3 normInv;
     Material material;
-    uint index;
+    int index;
 };
 
 struct ThreadData

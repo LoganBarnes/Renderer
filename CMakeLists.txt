@@ -6,7 +6,7 @@ set (Renderer_VERSION_MAJOR 1)
 set (Renderer_VERSION_MINOR 0)
 
 # should we use cuda functions?
-option(USE_CUDA "Use CUDA kernels if available" OFF)
+option(USE_CUDA "Use CUDA kernels if available" ON)
 
 # should we show the output graphically?
 option(USE_GRAPHICS "Use CUDA kernels if available" ON) # haven't implemented 'OFF' version yet
@@ -35,8 +35,8 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 ## add glm functionality
 set(GLM_DIR "${PROJECT_SOURCE_DIR}/../thirdparty/glm")
 if (EXISTS ${GLM_DIR})
-    message("-FOUND: GLM")
-    add_subdirectory("${GLM_DIR}" "${PROJECT_SOURCE_DIR}/../thirdparty/bin/glm")
+    message("-- FOUND: GLM")
+    #add_subdirectory("${GLM_DIR}" "${PROJECT_SOURCE_DIR}/../thirdparty/bin/glm")
     include_directories("${GLM_DIR}/glm")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm/detail")

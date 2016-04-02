@@ -140,7 +140,7 @@ void PathTracer::addShape(ShapeType type, glm::mat4 trans, Material material, bo
     set_float_mat4(shape.inv, inv);
     set_float_mat3(shape.normInv, normInv);
     shape.material = material;
-    shape.index = m_numShapes;
+    shape.index = static_cast<int>(m_numShapes);
 
     m_hShapes[m_numShapes] = shape;
 
@@ -165,7 +165,7 @@ void PathTracer::addAreaLight(ShapeType type, glm::mat4 trans, Material material
     set_float_mat4(shape.inv, inv);
     set_float_mat3(shape.normInv, normInv);
     shape.material = material;
-    shape.index = m_numShapes;
+    shape.index    = static_cast<int>(m_numShapes);
 
     m_hShapes[m_numShapes] = shape;
     m_hAreaLights[m_numAreaLights] = shape;

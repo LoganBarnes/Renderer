@@ -111,12 +111,12 @@ extern "C"
      */
     __device__
     float3 estimateDirectLightFromAreaLights(SurfaceElement *surfel,
-                                                Shape *shapes,
-                                                uint numShapes,
-                                                Shape *areaLights,
-                                                uint numAreaLights,
-                                                curandState *randState,
-                                                int id)
+                                             Shape *shapes,
+                                             uint numShapes,
+                                             Shape *areaLights,
+                                             uint numAreaLights,
+                                             curandState *randState,
+                                             int id)
     {
         Radiance3 L_o = make_float3(0.f);
 
