@@ -135,7 +135,7 @@ extern "C"
                 const float distance2 = dot(w_i, w_i);
                 w_i /= sqrt(distance2);
 
-                L_o += surfel->material.color * // should calc BDSF
+                L_o += surfel->material.color * // should calc BSDF
                         (lightSurfel.material.power / PI_F) *
                         max(0.f, dot(w_i, surfel->normal)) *
                         max(0.f, dot(-w_i, lightSurfel.normal / distance2));
