@@ -49,10 +49,6 @@ inline __host__ __device__ void make_float_mat3(float3 *mat3, float4 *mat4)
  */
 inline __host__ __device__ float4 operator*(float4 *mat4, float4 vec)
 {
-    //    return make_float4(dot(mat4[0], vec),
-    //                       dot(mat4[1], vec),
-    //                       dot(mat4[2], vec),
-    //                       dot(mat4[3], vec));
     return mat4[0] * vec.x + mat4[1] * vec.y + mat4[2] * vec.z + mat4[3] * vec.w;
 }
 
@@ -62,9 +58,6 @@ inline __host__ __device__ float4 operator*(float4 *mat4, float4 vec)
  */
 inline __host__ __device__ float3 operator*(float3 *mat3, float3 vec)
 {
-    //    return make_float3(dot(mat3[0], vec),
-    //                       dot(mat3[1], vec),
-    //                       dot(mat3[2], vec));
     return mat3[0] * vec.x + mat3[1] * vec.y + mat3[2] * vec.z;
 }
 
