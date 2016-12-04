@@ -31,46 +31,46 @@ Camera::~Camera()
 {
 }
 
-glm::mat4 Camera::getProjectionMatrix()
+const glm::mat4& Camera::getProjectionMatrix()
 {
     return m_proj;
 }
 
-glm::mat4 Camera::getViewMatrix()
+const glm::mat4& Camera::getViewMatrix()
 {
     return m_view;
 }
 
-glm::mat4 Camera::getScaleMatrix()
+const glm::mat4& Camera::getScaleMatrix()
 {
     return m_scale;
 }
 
-glm::mat4 Camera::getScaleViewInvMatrix()
+const glm::mat4& Camera::getScaleViewInvMatrix()
 {
     return m_scaleViewInv;
 }
 
-glm::mat4 Camera::getFrustumMatrix()
+const glm::mat4& Camera::getFrustumMatrix()
 {
     return m_frustum;
 }
 
-glm::vec4 Camera::getLook()
+const glm::vec4& Camera::getLook()
 {
     return m_look;
 }
 
-glm::vec4 Camera::getUp()
+const glm::vec4& Camera::getUp()
 {
     return m_up;
 }
 
-glm::vec3 Camera::getRight(){
+const glm::vec3& Camera::getRight(){
     return glm::cross(glm::vec3(m_look),glm::vec3(m_up));
 }
 
-glm::vec4 Camera::getEye()
+const glm::vec4& Camera::getEye()
 {
     return m_eye;
 }

@@ -1,7 +1,7 @@
 #include <iostream>
 #include "driver/Driver.hpp"
 #include "world/World.hpp"
-#include "io/IOHandler.hpp"
+#include "RendererIOHandler.hpp"
 #include "RendererConfig.hpp"
 
 
@@ -19,12 +19,12 @@ main(
      )
 {
 
-    srt::Driver::printProjectInfo(
-                                  rndr::PROJECT_NAME,
-                                  rndr::VERSION_MAJOR,
-                                  rndr::VERSION_MINOR,
-                                  rndr::VERSION_PATCH
-                                  );
+    shared::Driver::printProjectInfo(
+                                     rndr::PROJECT_NAME,
+                                     rndr::VERSION_MAJOR,
+                                     rndr::VERSION_MINOR,
+                                     rndr::VERSION_PATCH
+                                     );
 
     try
     {
@@ -34,14 +34,14 @@ main(
       // and ioHandler to interface between the
       // world and the user
       //
-      srt::World     world;
-      srt::IOHandler io( world );
+      shared::World           world;
+      rndr::RendererIOHandler io( world );
 
       //
       // pass world and ioHandler to driver
       // to manage update loops
       //
-      srt::Driver driver( world, io );
+      shared::Driver driver( world, io );
 
       //
       // run program

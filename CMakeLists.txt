@@ -1,60 +1,3 @@
-
-#    # create the cuda library
-#    find_package(CUDA REQUIRED)
-#    include_directories("${PROJECT_SOURCE_DIR}/include/helperCuda")
-#    include_directories("${PROJECT_SOURCE_DIR}/include/renderApp/cuda")
-
-#    # set nvcc options
-#    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -O3 -gencode arch=compute_30,code=sm_30")
-#    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --compiler-options -fno-strict-aliasing -use_fast_math")
-#    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --ptxas-options=-v")
-
-#    # build CUDA library
-#    cuda_add_library(CudaLib ${CUDA_SOURCE})
-#    target_link_libraries(CudaLib ${CUDA_curand_LIBRARY})
-
-#    set (EXTRA_LIBS ${EXTRA_LIBS} CudaLib)
-#    set (DEPENDENCIES ${DEPENDENCIES} CudaLib)
-
-#    include_directories("${CUDA_INCLUDE_DIRS}")
-
-#    # ignore warnings from 3rd party files
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${CUDA_INCLUDE_DIRS}")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/include/helperCuda")
-
-
-
-## compile flags
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wcast-align -Wcast-qual")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Winit-self -Wmissing-declarations -Wmissing-include-dirs")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Woverloaded-virtual -Wredundant-decls")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-overflow=5")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wswitch-default -Wundef -Werror -Wno-unused")
-
-## make project into library that can be used by multiple executables (such as test classes)
-
-## USED WITH QT CREATOR
-#add_subdirectory("${PROJECT_SOURCE_DIR}/include") # QT
-#add_subdirectory("${RESOURCES_PATH}") # QT
-#add_library (RendererLib ${SOURCE} ${HEADERS} ${RES_FILES} ${CUDA_SOURCE}) # QT
-## ELSE (WHEN NOT USING QT CREATOR)
-##add_library (RendererLib ${SOURCE}) # NON-QT
-#add_dependencies(RendererLib ${DEPENDENCIES})
-#set (DEPENDENCIES ${DEPENDENCIES} RendererLib)
-
-#add_executable (Renderer "${PROJECT_SOURCE_DIR}/src/main.cpp")
-#target_link_libraries (Renderer RendererLib ${EXTRA_LIBS})
-#add_dependencies(Renderer ${DEPENDENCIES})
-
-
-
-
-
-
-
-
-
 cmake_minimum_required ( VERSION 3.2.0 )
 project ( Renderer )
 
@@ -76,6 +19,9 @@ set( SHADER_PATH ${SHARED_PATH}/shaders       )
 
 set( PROJECT_CONFIG_FILE ${SHARED_PATH}/src/common/ProjectConfig.hpp.in )
 
+
+set( USE_GLFW ON CACHE BOOL "" FORCE )
+#set( USE_GLM  ON CACHE BOOL "" FORCE )
 
 # set variables from shared simulation project
 add_subdirectory( ${SHARED_PATH} )
@@ -100,11 +46,35 @@ set(
     )
 
 
+
+set(
+    PROJECT_CUDA_SOURCE
+
+    ${SHARED_PATH}/src/cuda/CudaWrappers.cu
+    ${SHARED_PATH}/src/cuda/CudaRandom.cu
+    )
+
+set(
+    PROJECT_CUDA_INCLUDE_DIRS
+
+    ${SHARED_PATH}/src/cuda
+    )
+
+
+set(
+    CUDA_COMPUTE_FLAGS
+    "-gencode arch=compute_30,code=sm_30"
+    " -gencode arch=compute_35,code=sm_35"
+    )
+
+
 # header dirs
 set(
     PROJECT_INCLUDE_DIRS
 
     ${SHARED_INCLUDE_DIRS}
+
+    ${SRC_DIR}/io
     )
 
 # cpp files
@@ -112,6 +82,8 @@ set(
     PROJECT_SOURCE
 
     ${SHARED_SOURCE}
+
+    ${SRC_DIR}/io/RendererIOHandler.cpp
     )
 
 

@@ -9,15 +9,15 @@ public:
     Camera();
     virtual ~Camera();
 
-    glm::mat4 getProjectionMatrix();
-    glm::mat4 getViewMatrix();
-    glm::mat4 getScaleMatrix();
-    glm::mat4 getScaleViewInvMatrix();
-    glm::mat4 getFrustumMatrix();
-    glm::vec4 getLook();
-    glm::vec4 getUp();
-    glm::vec3 getRight();
-    glm::vec4 getEye();
+    const glm::mat4& getProjectionMatrix();
+    const glm::mat4& getViewMatrix();
+    const glm::mat4& getScaleMatrix();
+    const glm::mat4& getScaleViewInvMatrix();
+    const glm::mat4& getFrustumMatrix();
+    const glm::vec4& getLook();
+    const glm::vec4& getUp();
+    const glm::vec3& getRight();
+    const glm::vec4& getEye();
     float getAspectRatio();
 
     void setAspectRatio(float a);
