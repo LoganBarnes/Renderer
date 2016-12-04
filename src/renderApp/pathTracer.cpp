@@ -9,7 +9,7 @@ const bool DIRECT = true;
 const bool INDIRECT = true;
 
 const int BOUNCE_LIMIT = 5;
-const uint64_t RAND_SEED = 1337;
+const uint64_t RAND_SEED = 1337; // teehee
 
 
 #ifdef USE_CUDA

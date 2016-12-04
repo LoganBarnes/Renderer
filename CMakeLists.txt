@@ -72,7 +72,7 @@ if (USE_GRAPHICS)
             )
         include_directories( SYSTEM "${PROJECT_SOURCE_DIR}/../commonLibs/glfw/include")
         set (EXTRA_LIBS ${EXTRA_LIBS} glfw ${GLFW_LIBRARIES})
-        
+
     else ()
         message("Couldn't find the GLFW library: Make sure the commonLibs directory is located in the same folder as the project directory")
     endif ()
@@ -176,7 +176,4 @@ add_dependencies(Renderer ${DEPENDENCIES})
     endforeach( testsourcefile ${TEST_SOURCES} )
 
 endif (GTEST_FOUND)
-
-
-
 
