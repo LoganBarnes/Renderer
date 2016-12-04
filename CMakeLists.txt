@@ -33,17 +33,17 @@ include_directories (
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 
 ## add glm functionality
-set(GLM_DIR "${PROJECT_SOURCE_DIR}/../thirdparty/glm")
+set(GLM_DIR "${PROJECT_SOURCE_DIR}/../commonLibs/glm")
 if (EXISTS ${GLM_DIR})
     message("-- FOUND: GLM")
-    #add_subdirectory("${GLM_DIR}" "${PROJECT_SOURCE_DIR}/../thirdparty/bin/glm")
+    #add_subdirectory("${GLM_DIR}" "${PROJECT_SOURCE_DIR}/../commonLibs/bin/glm")
     include_directories("${GLM_DIR}/glm")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm/detail")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm/gtx")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${GLM_DIR}/glm/gtc")
 else()
-    message("Couldn't find the GLM library: Make sure the thirdparty directory is located in the same folder as the project directory")
+    message("Couldn't find the GLM library: Make sure the commonLibs directory is located in the same folder as the project directory")
 endif()
 
 if (USE_GRAPHICS)
@@ -62,16 +62,19 @@ if (USE_GRAPHICS)
     endif (GLEW_FOUND)
 
     # add glfw3 functionality
-    if (EXISTS "${PROJECT_SOURCE_DIR}/../thirdparty/glfw")
+    if (EXISTS "${PROJECT_SOURCE_DIR}/../commonLibs/glfw")
+        set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
         add_subdirectory(
-            "${PROJECT_SOURCE_DIR}/../thirdparty/glfw" # glfw src location
-            "${PROJECT_SOURCE_DIR}/../thirdparty/bin/glfw" # glfw binary location
+            "${PROJECT_SOURCE_DIR}/../commonLibs/glfw" # glfw src location
+            "${PROJECT_SOURCE_DIR}/../commonLibs/bin/glfw" # glfw binary location
             )
-        include_directories("${PROJECT_SOURCE_DIR}/../thirdpart/glfw/include")
+        include_directories( SYSTEM "${PROJECT_SOURCE_DIR}/../commonLibs/glfw/include")
         set (EXTRA_LIBS ${EXTRA_LIBS} glfw ${GLFW_LIBRARIES})
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem ${PROJECT_SOURCE_DIR}/../thirdpart/glfw/include")
+        
     else ()
-        message("Couldn't find the GLFW library: Make sure the thirdparty directory is located in the same folder as the project directory")
+        message("Couldn't find the GLFW library: Make sure the commonLibs directory is located in the same folder as the project directory")
     endif ()
 
 
@@ -102,6 +105,8 @@ if (USE_CUDA)
     target_link_libraries(CudaLib ${CUDA_curand_LIBRARY})
 
     set (EXTRA_LIBS ${EXTRA_LIBS} CudaLib)
+    set (DEPENDENCIES ${DEPENDENCIES} CudaLib)
+
     include_directories("${CUDA_INCLUDE_DIRS}")
 
     # ignore warnings from 3rd party files
@@ -134,9 +139,12 @@ add_subdirectory("${RESOURCES_PATH}") # QT
 add_library (RendererLib ${SOURCE} ${HEADERS} ${RES_FILES} ${CUDA_SOURCE}) # QT
 # ELSE (WHEN NOT USING QT CREATOR)
 #add_library (RendererLib ${SOURCE}) # NON-QT
+add_dependencies(RendererLib ${DEPENDENCIES})
+set (DEPENDENCIES ${DEPENDENCIES} RendererLib)
 
 add_executable (Renderer "${PROJECT_SOURCE_DIR}/src/main.cpp")
 target_link_libraries (Renderer RendererLib ${EXTRA_LIBS})
+add_dependencies(Renderer ${DEPENDENCIES})
 
 
 
@@ -144,25 +152,30 @@ target_link_libraries (Renderer RendererLib ${EXTRA_LIBS})
 
 
 
-# # testing
-# find_package(GTEST)
-# if (GTEST_FOUND)
-#     include_directories(${GTEST_INCLUDE_DIRS})
+ # testing
+ find_package(GTEST)
+ if (GTEST_FOUND)
+     include_directories(${GTEST_INCLUDE_DIRS})
 
-#     # GMock
-#     include_directories("/usr/local/include/gmock")
-#     set(GMOCK_BOTH_LIBRARIES "/usr/local/lib/libgmock.a" "/usr/local/lib/libgmock_main.a")
+     # GMock
+     include_directories("/usr/local/include/gmock")
+     set(GMOCK_BOTH_LIBRARIES "/usr/local/lib/libgmock.a" "/usr/local/lib/libgmock_main.a")
 
-#     add_subdirectory("${PROJECT_SOURCE_DIR}/src/testing")
-#     foreach( testsourcefile ${TEST_SOURCES} )
-#         # I used a simple string replace, to cut off .cpp and path.
-#         string( REPLACE ".cpp" "" testname ${testsourcefile} )
-#         string( REPLACE "${PROJECT_SOURCE_DIR}/src/testing/" "" testname ${testname} )
-#         add_executable( ${testname} ${testsourcefile} )
-#         # Make sure lib is linked to each app
-#         target_link_libraries( ${testname} RendererLib ${EXTRA_LIBS} ${GTEST_BOTH_LIBRARIES} ${GMOCK_BOTH_LIBRARIES})
-#     endforeach( testsourcefile ${TEST_SOURCES} )
-# endif (GTEST_FOUND)
+     add_subdirectory("${PROJECT_SOURCE_DIR}/src/testing")
+     foreach( testsourcefile ${TEST_SOURCES} )
+
+         # I used a simple string replace, to cut off .cpp and path.
+         string( REPLACE ".cpp" "" testname ${testsourcefile} )
+         string( REPLACE "${PROJECT_SOURCE_DIR}/src/testing/" "" testname ${testname} )
+         add_executable( ${testname} ${testsourcefile} )
+         add_dependencies(${testname} ${DEPENDENCIES})
+
+         # Make sure lib is linked to each app
+         target_link_libraries( ${testname} RendererLib ${EXTRA_LIBS} ${GTEST_BOTH_LIBRARIES} ${GMOCK_BOTH_LIBRARIES})
+
+    endforeach( testsourcefile ${TEST_SOURCES} )
+
+endif (GTEST_FOUND)
 
 
 

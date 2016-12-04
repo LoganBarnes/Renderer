@@ -49,10 +49,6 @@ inline __host__ __device__ void make_float_mat3(float3 *mat3, float4 *mat4)
  */
 inline __host__ __device__ float4 operator*(float4 *mat4, float4 vec)
 {
-    //    return make_float4(dot(mat4[0], vec),
-    //                       dot(mat4[1], vec),
-    //                       dot(mat4[2], vec),
-    //                       dot(mat4[3], vec));
     return mat4[0] * vec.x + mat4[1] * vec.y + mat4[2] * vec.z + mat4[3] * vec.w;
 }
 
@@ -62,9 +58,6 @@ inline __host__ __device__ float4 operator*(float4 *mat4, float4 vec)
  */
 inline __host__ __device__ float3 operator*(float3 *mat3, float3 vec)
 {
-    //    return make_float3(dot(mat3[0], vec),
-    //                       dot(mat3[1], vec),
-    //                       dot(mat3[2], vec));
     return mat3[0] * vec.x + mat3[1] * vec.y + mat3[2] * vec.z;
 }
 
@@ -78,6 +71,48 @@ inline __host__ __device__ void transpose_float_mat3(float3 *out, float3 *in)
     out[1] = make_float3(in[0].y, in[1].y, in[2].y);
     out[2] = make_float3(in[0].z, in[1].z, in[2].z);
 }
+
+
+/*
+ * 3x3 Identity Matrix. Matrix stored in column major order.
+ */
+inline __host__ __device__ void set_identity_mat3(float3 *mat3)
+{
+    mat3[0] = make_float3(1.0, 0.0, 0.0);
+    mat3[1] = make_float3(0.0, 1.0, 0.0);
+    mat3[2] = make_float3(0.0, 0.0, 1.0);
+}
+
+
+///*
+// *
+// */
+//__host__ __device__
+//float3 *getRotationMatrixToAlignHemiVectors(float3 base, float vec)
+//{
+//     float3 n = cross(vec, base);
+//     float  s = length(n); // sine
+
+//    // assumes vectors in the same hemisphere and normalized
+//    // a.k.a. cross( vec, base ) only equals zero when they are equal
+//    if ( s == 0 )
+//    {
+//        if (abs( dot( base, base ) - dot( base, vec) ) < 1e-9 )
+//            return identity_mat3();
+//    }
+
+//    float c = dot( vec, base ); // cosine
+
+//    // column-major
+//    float *mat1 = {  0.0,  n.z, -n.y,
+//                     n.z,  0.0, -n.x,
+//                     n.y, -n.x,  0.0  };
+
+
+
+
+
+//}
 
 #else
 

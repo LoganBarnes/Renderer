@@ -9,11 +9,11 @@
 #include "camera.hpp"
 #include "renderCallback.hpp"
 
-//const int DEFAULT_WIDTH = 640;
-//const int DEFAULT_HEIGHT = 480;
+const int DEFAULT_WIDTH  = 640;
+const int DEFAULT_HEIGHT = 480;
 
-const int DEFAULT_WIDTH = 480;
-const int DEFAULT_HEIGHT = 380;
+//const int DEFAULT_WIDTH = 480;
+//const int DEFAULT_HEIGHT = 380;
 
 const float LIGHT_SCALING = 0.5f;
 

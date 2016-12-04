@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <glm/gtc/type_ptr.hpp>
+#include <gtc/type_ptr.hpp>
 #include "renderObjects.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -179,5 +179,59 @@ TEST_F(MathTest, MatrixVectorMult3EqualsGLMMatrixVectorMult3)
     std::vector<float> myFloatVector(myPtr, myPtr + 3 * numTestVecs);
     EXPECT_THAT(glmFloatVector, Pointwise(FloatEq(FLOAT_ERROR), myFloatVector));
 }
+
+
+
+
+/*
+ * Tests stuff
+ */
+TEST_F(MathTest, VectorAlignmentWorks)
+{
+    using ::testing::ElementsAreArray;
+    using ::testing::Pointwise;
+
+    // set vector arrays to compare later
+    const int numTestVecs = 1000;
+    glm::vec3 glmResults[numTestVecs];
+    float3 myResults[numTestVecs];
+
+    // matrices to multiply
+    glm::mat4 glmMat4 = glm::mat4(std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand(),
+                                  std::rand(), std::rand(), std::rand(), std::rand());
+    glmMat4 *= 1.f / static_cast<float>(RAND_MAX);
+    float4 myMat4[4];
+    float3 myMat3[3];
+    set_float_mat4(myMat4, glmMat4);
+    make_float_mat3(myMat3, myMat4);
+    glm::mat3 glmMat3 = glm::mat3(glmMat4);
+
+
+    // multiply random vectors by both matrices and store results
+    float invMax = 1.f / RAND_MAX;
+    float x, y, z;
+    for (int i = 0; i < numTestVecs; ++i)
+    {
+        x = std::rand() * invMax;
+        y = std::rand() * invMax;
+        z = std::rand() * invMax;
+
+        glmResults[i] = glmMat3 * glm::vec3(x, y, z);
+        myResults[i] = myMat3 * make_float3(x, y, z);
+    }
+
+    // get pointers to arrays
+    float *glmPtr = reinterpret_cast<float*>(glmResults);
+    float *myPtr = reinterpret_cast<float*>(myResults);
+
+    // convert to vectors for comparison
+    std::vector<float> glmFloatVector(glmPtr, glmPtr + 3 * numTestVecs);
+    std::vector<float> myFloatVector(myPtr, myPtr + 3 * numTestVecs);
+    EXPECT_THAT(glmFloatVector, Pointwise(FloatEq(FLOAT_ERROR), myFloatVector));
+}
+
+
 
 } // namespace

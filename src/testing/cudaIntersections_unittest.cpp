@@ -1,4 +1,4 @@
-#include <glm/gtc/matrix_transform.hpp>
+#include <gtc/matrix_transform.hpp>
 #include "cuda_wrappers.cuh"
 #include "cuda_random.cuh"
 #include "cuda_tester.cuh"

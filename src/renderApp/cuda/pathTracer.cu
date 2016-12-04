@@ -6,6 +6,7 @@
 #include "intersections.cu"
 #include "renderRandom.cu"
 
+
 __device__ const float BUMP_VAL = 1e-3f;
 __device__ const float PI_F = 3.141592653539f;
 
@@ -89,7 +90,6 @@ extern "C"
             if (dot(surfel->normal, w_o) < 0.f)
             {
                 bump = -bump;
-//                printf("neg bump ");
             }
             ray->orig = surfel->point + surfel->normal * bump;
             ray->dir = w_o;
@@ -115,6 +115,7 @@ extern "C"
                                              uint numShapes,
                                              Shape *areaLights,
                                              uint numAreaLights,
+                                             float3 rayDir,
                                              curandState *randState,
                                              int id)
     {
@@ -135,7 +136,7 @@ extern "C"
                 const float distance2 = dot(w_i, w_i);
                 w_i /= sqrt(distance2);
 
-                L_o += surfel->material.color * // should calc BDSF
+                L_o = surfel->material.lambertianReflect	*
                         (lightSurfel.material.power / PI_F) *
                         max(0.f, dot(w_i, surfel->normal)) *
                         max(0.f, dot(-w_i, lightSurfel.normal / distance2));
@@ -187,6 +188,7 @@ extern "C"
                                                                  numShapes,
                                                                  areaLights,
                                                                  numAreaLights,
+                                                                  ray->dir,
                                                                  randState,
                                                                  id);
             } // end DIRECT
