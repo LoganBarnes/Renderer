@@ -1,9 +1,9 @@
 #ifndef RENDER_OBJECTS_H
 #define RENDER_OBJECTS_H
 
-#include <glm.hpp>
-#include "renderTypes.hpp"
-#include "renderer-config.hpp"
+#include "glm/glm.hpp"
+#include "RenderTypes.hpp"
+#include "RendererConfig.hpp"
 
 #ifdef USE_CUDA
 #include "helper_math.h"

@@ -21,11 +21,10 @@ set( PROJECT_CONFIG_FILE ${SHARED_PATH}/src/common/ProjectConfig.hpp.in )
 
 
 set( USE_GLFW ON CACHE BOOL "" FORCE )
-#set( USE_GLM  ON CACHE BOOL "" FORCE )
+set( USE_GLM  ON CACHE BOOL "" FORCE )
 
 # set variables from shared simulation project
 add_subdirectory( ${SHARED_PATH} )
-
 
 # system header dirs
 set(
@@ -54,11 +53,8 @@ set(
     ${SHARED_PATH}/src/cuda/CudaRandom.cu
     )
 
-set(
-    PROJECT_CUDA_INCLUDE_DIRS
-
-    ${SHARED_PATH}/src/cuda
-    )
+set( PROJECT_CUDA_INCLUDE_DIRS        ${SHARED_PATH}/src/cuda         )
+set( PROJECT_CUDA_SYSTEM_INCLUDE_DIRS ${SHARED_PATH}/src/cuda/helpers )
 
 
 set(
@@ -67,6 +63,8 @@ set(
     " -gencode arch=compute_35,code=sm_35"
     )
 
+set( USE_CUDA ON )
+
 
 # header dirs
 set(
@@ -74,16 +72,23 @@ set(
 
     ${SHARED_INCLUDE_DIRS}
 
+    ${SRC_DIR}/common
     ${SRC_DIR}/io
+    ${SRC_DIR}/path
+    ${SRC_DIR}/path/cuda
     )
 
 # cpp files
 set(
     PROJECT_SOURCE
 
+    ${SHARED_UNCRUSTIFY_FILE} # ignored by compilers but added to project files
+
     ${SHARED_SOURCE}
 
     ${SRC_DIR}/io/RendererIOHandler.cpp
+
+    ${SRC_DIR}/path/PathTracer.cpp
     )
 
 

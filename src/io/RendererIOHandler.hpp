@@ -16,6 +16,8 @@ class World;
 namespace rndr
 {
 
+class PathTracer;
+
 
 /////////////////////////////////////////////
 /// \brief The RendererIOHandler class
@@ -49,7 +51,9 @@ private:
   virtual
   void onRender( const double alpha ) final;
 
-  // RendererWorld &world_;
+  PathTracer *upPathTracer_;
+//  std::unique_ptr< PathTracer > upPathTracer_;
+
 
 };
 

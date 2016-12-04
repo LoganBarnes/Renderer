@@ -1,8 +1,9 @@
-#include <GL/glew.h>
-#include <gtc/type_ptr.hpp>
+#include "glad/glad.h"
+#include "glm/gtc/type_ptr.hpp"
+
 #include <iostream>
-#include "pathTracer.hpp"
-#include "renderObjects.hpp"
+#include "RenderObjects.hpp"
+#include "PathTracer.hpp"
 
 const bool EMIT = true;
 const bool DIRECT = true;
@@ -15,8 +16,8 @@ const uint64_t RAND_SEED = 1337; // teehee
 #ifdef USE_CUDA
 
 #include <cuda_runtime.h>
-#include "cuda_wrappers.cuh"
-#include "cuda_random.cuh"
+#include "CudaWrappers.cuh"
+#include "CudaRandom.cuh"
 #include "cuda_render.cuh"
 
 #define USE_CUDA_PROFILING

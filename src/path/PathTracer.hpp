@@ -2,9 +2,9 @@
 #define PATH_TRACER_H
 
 #include <unordered_map>
-#include "glm.hpp"
-#include "renderTypes.hpp"
-#include "renderer-config.hpp"
+#include "glm/glm.hpp"
+#include "RenderTypes.hpp"
+#include "RendererConfig.hpp"
 
 typedef unsigned int GLuint;
 
@@ -47,7 +47,7 @@ public:
 
 private:
 
-    Shape *m_hShapes;           // host shapes
+    Shape *m_hShapes;       // host shapes
     Shape *m_hAreaLights;   // host luminaires
 
 #ifdef USE_CUDA
