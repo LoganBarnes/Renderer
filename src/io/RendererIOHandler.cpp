@@ -42,7 +42,7 @@ RendererIOHandler::~RendererIOHandler( )
 /// \author Logan Barnes
 /////////////////////////////////////////////
 void
-RendererIOHandler::onRender( const double alpha )
+RendererIOHandler::onRender( const double )
 {
 
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
