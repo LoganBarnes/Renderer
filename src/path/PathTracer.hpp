@@ -11,7 +11,7 @@ typedef unsigned int GLuint;
 
 #ifdef USE_CUDA
 #include <curand_kernel.h>
-typedef struct cudaGraphicsResource *cudaGraphicsResource_t;
+typedef struct cudaGraphicsResource*cudaGraphicsResource_t;
 #else
 #include <pthread.h>
 struct ThreadData;
@@ -19,7 +19,13 @@ struct ThreadData;
 #endif
 
 struct Shape;
+
 struct Material;
+
+
+namespace rndr
+{
+
 
 /**
  * @brief The PathTracer class.
@@ -29,61 +35,106 @@ class PathTracer
 {
 
 public:
-    explicit PathTracer();
-    virtual ~PathTracer();
 
-    void init(int argc, const char **argv, GLuint width, GLuint height);
+  explicit
+  PathTracer( );
 
-    void register2DTexture(const char *name, GLuint tex);
-    void unregisterTexture(const char *name);
-    void swapResources(const char *res1, const char *res2);
+  ~PathTracer( );
 
-    void addShape(ShapeType type, glm::mat4 trans, Material material, bool sendToGPU = true);
-    void addAreaLight(ShapeType type, glm::mat4 trans, Material material, bool sendToGPU = true);
-    void updateShapesOnGPU();
+  void init (
+             GLuint width,
+             GLuint height
+             );
 
-    void setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv);
-    void tracePath(const char *writeTex, GLuint width, GLuint height, float scaleFactor);
+  void register2DTexture (
+                          const std::string name,
+                          GLuint            tex
+                          );
+  void unregisterTexture ( const std::string name );
+  void swapResources (
+                      const std::string res1,
+                      const std::string res2
+                      );
+
+  void addShape (
+                 ShapeType type,
+                 glm::mat4 trans,
+                 Material  material,
+                 bool      sendToGPU = true
+                 );
+  void addAreaLight (
+                     ShapeType type,
+                     glm::mat4 trans,
+                     Material  material,
+                     bool      sendToGPU = true
+                     );
+  void updateShapesOnGPU ( );
+
+  void setScaleViewInvEye (
+                           glm::vec4 eye,
+                           glm::mat4 scaleViewInv
+                           );
+  void tracePath (
+                  const std::string writeTex,
+                  GLuint            width,
+                  GLuint            height,
+                  float             scaleFactor
+                  );
+
 
 private:
 
-    Shape *m_hShapes;       // host shapes
-    Shape *m_hAreaLights;   // host luminaires
+  Shape *m_hShapes;         // host shapes
+  Shape *m_hAreaLights;     // host luminaires
 
 #ifdef USE_CUDA
 
-    // handles OpenGL-CUDA exchanges
-    std::unordered_map<const char *, cudaGraphicsResource_t> m_resources;
+  // handles OpenGL-CUDA exchanges
+  std::unordered_map< std::string, cudaGraphicsResource_t > m_resources;
 
-    void _tracePathCUDA(const char *writeTex, GLuint width, GLuint height, float scaleFactor);
+  void _tracePathCUDA (
+                       const std::string writeTex,
+                       GLuint            width,
+                       GLuint            height,
+                       float             scaleFactor
+                       );
 
-    float *m_dScaleViewInvEye;  // device matrix
-    Shape *m_dShapes;           // device shapes
-    Shape *m_dAreaLights;   // device luminaires
+  float *m_dScaleViewInvEye;    // device matrix
+  Shape *m_dShapes;             // device shapes
+  Shape *m_dAreaLights;     // device luminaires
 
-    curandState *m_dRandState;
+  curandState *m_dRandState;
 
-#else
+#else // ifdef USE_CUDA
 
-    std::unordered_map<const char *, GLuint> m_textures;
+  std::unordered_map< const char*, GLuint > m_textures;
 
-    pthread_t *m_threads;
-    ThreadData *m_args;
+  pthread_t *m_threads;
+  ThreadData *m_args;
 
-    pthread_attr_t m_attr;
-    GLuint m_numThreads;
+  pthread_attr_t m_attr;
+  GLuint m_numThreads;
 
-    glm::mat4 m_hScaleViewInv;  // host matrix
-    glm::vec4 m_hEye;
+  glm::mat4 m_hScaleViewInv;    // host matrix
+  glm::vec4 m_hEye;
 
-    void _tracePathCPU(const char *writeTex, GLuint width, GLuint height, float scaleFactor);
+  void _tracePathCPU (
+                      const std::string writeTex,
+                      GLuint            width,
+                      GLuint            height,
+                      float             scaleFactor
+                      );
 
-#endif
+#endif // ifdef USE_CUDA
 
-    GLuint m_numShapes;
-    GLuint m_numAreaLights;
+  GLuint m_numShapes;
+  GLuint m_numAreaLights;
 
-    bool m_initialized;
+  bool m_initialized;
 };
+
+
+} // namespace rndr
+
 
 #endif // PATH_TRACER_H

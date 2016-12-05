@@ -49,12 +49,34 @@ set(
 set(
     PROJECT_CUDA_SOURCE
 
+    ${SHARED_PATH}/src/cuda/CudaWrappers.cuh
     ${SHARED_PATH}/src/cuda/CudaWrappers.cu
+    ${SHARED_PATH}/src/cuda/CudaRandom.cuh
     ${SHARED_PATH}/src/cuda/CudaRandom.cu
+
+    ${SRC_DIR}/path/cuda/CudaPathTracer.cuh
+    ${SRC_DIR}/path/cuda/CudaPathTracer.cu
+    ${SRC_DIR}/path/cuda/CudaRendererRandom.cu
+    ${SRC_DIR}/path/cuda/CudaIntersections.cu
     )
 
-set( PROJECT_CUDA_INCLUDE_DIRS        ${SHARED_PATH}/src/cuda         )
-set( PROJECT_CUDA_SYSTEM_INCLUDE_DIRS ${SHARED_PATH}/src/cuda/helpers )
+set(
+    PROJECT_CUDA_INCLUDE_DIRS
+
+    ${SHARED_INCLUDE_DIRS}
+
+    ${SHARED_PATH}/src/cuda
+    ${SRC_DIR}/path/cuda
+    ${SRC_DIR}/common
+    )
+
+set(
+    PROJECT_CUDA_SYSTEM_INCLUDE_DIRS
+
+    ${SHARED_SYSTEM_INCLUDE_DIRS}
+
+    ${SHARED_PATH}/src/cuda/helpers
+    )
 
 
 set(
@@ -82,13 +104,25 @@ set(
 set(
     PROJECT_SOURCE
 
-    ${SHARED_UNCRUSTIFY_FILE} # ignored by compilers but added to project files
+    # ignored by compilers but added to project files
+    ${SHARED_UNCRUSTIFY_FILE}
+    ${SHADER_PATH}/screenSpace/shader.vert
+    ${SHADER_PATH}/blending/shader.frag
 
     ${SHARED_SOURCE}
 
+    ${SRC_DIR}/io/RendererIOHandler.hpp
     ${SRC_DIR}/io/RendererIOHandler.cpp
+    ${SRC_DIR}/io/RendererCallback.hpp
+    ${SRC_DIR}/io/RendererCallback.cpp
 
+    ${SRC_DIR}/path/PathTracer.hpp
     ${SRC_DIR}/path/PathTracer.cpp
+
+    ${SRC_DIR}/common/RenderTypes.hpp
+    ${SRC_DIR}/common/RenderObjects.hpp
+
+
     )
 
 

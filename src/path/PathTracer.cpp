@@ -18,9 +18,13 @@ const uint64_t RAND_SEED = 1337; // teehee
 #include <cuda_runtime.h>
 #include "CudaWrappers.cuh"
 #include "CudaRandom.cuh"
-#include "cuda_render.cuh"
+#include "CudaPathTracer.cuh"
 
 #define USE_CUDA_PROFILING
+
+namespace rndr
+{
+
 
 PathTracer::PathTracer()
     : m_dScaleViewInvEye(NULL),
@@ -72,9 +76,9 @@ PathTracer::~PathTracer()
 }
 
 
-void PathTracer::init(int argc, const char **argv, GLuint width, GLuint height)
+void PathTracer::init( GLuint width, GLuint height)
 {
-    cuda_init(argc, argv);
+    cuda_init( 0, 0 );
     m_initialized = true;
 
     cuda_allocateArray(reinterpret_cast<void**>(&m_dRandState), width * height * sizeof(curandState));
@@ -85,12 +89,14 @@ void PathTracer::init(int argc, const char **argv, GLuint width, GLuint height)
     GLuint parts = partsMinus + 1;
     GLuint initHeight = height / parts;
     GLuint offset;
+
     for (GLuint i = 0; i < partsMinus; ++i)
     {
         offset = i * initHeight * width;
         cuda_initCuRand(m_dRandState, offset, RAND_SEED, dim3(width, initHeight));
         std::cout << "\r(" << (i+1) << "/" << parts << ")";
     }
+
     offset = partsMinus * initHeight * width;
     GLuint finalHeight = height - (initHeight * partsMinus);
     cuda_initCuRand(m_dRandState, offset, RAND_SEED, dim3(width, finalHeight));
@@ -106,7 +112,7 @@ void PathTracer::init(int argc, const char **argv, GLuint width, GLuint height)
 }
 
 
-void PathTracer::register2DTexture(const char *name, GLuint tex)
+void PathTracer::register2DTexture(const std::string name, GLuint tex)
 {
     cudaGraphicsResource_t resource;
     cuda_registerGLTexture(&resource, tex, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsSurfaceLoadStore);
@@ -114,13 +120,13 @@ void PathTracer::register2DTexture(const char *name, GLuint tex)
 }
 
 
-void PathTracer::unregisterTexture(const char *name)
+void PathTracer::unregisterTexture(const std::string name)
 {
     cuda_unregisterResource(m_resources[name]);
 }
 
 
-void PathTracer::swapResources(const char *res1, const char *res2)
+void PathTracer::swapResources(const std::string res1, const std::string res2)
 {
     cudaGraphicsResource_t temp = m_resources[res1];
     m_resources[res1] = m_resources[res2];
@@ -196,51 +202,61 @@ void PathTracer::setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv)
 }
 
 
-void PathTracer::tracePath(const char *writeTex, GLuint width, GLuint height, float scaleFactor)
+void PathTracer::tracePath(const std::string writeTex, GLuint width, GLuint height, float scaleFactor)
 {
-    this->_tracePathCUDA(writeTex, width, height, scaleFactor);
+    _tracePathCUDA(writeTex, width, height, scaleFactor);
 }
 
 
-void PathTracer::_tracePathCUDA(const char *tex, GLuint width, GLuint height, float scaleFactor)
+void
+PathTracer::_tracePathCUDA(
+                           const std::string tex,
+                           GLuint            width,
+                           GLuint            height,
+                           float             scaleFactor
+                           )
 {
-    cudaGraphicsResource_t res = m_resources[tex];
+  cudaGraphicsResource_t res = m_resources[ tex ];
 
-    cuda_graphicsMapResource(&res);
+  cuda_graphicsMapResource( &res );
 
-    cudaArray_t writeArray;
-    cuda_graphicsSubResourceGetMappedArray(&writeArray, res, 0, 0);
+  cudaArray_t writeArray;
+  cuda_graphicsSubResourceGetMappedArray( &writeArray, res, 0, 0 );
 
-    cudaResourceDesc dsc;
-    dsc.resType = cudaResourceTypeArray;
-    dsc.res.array.array = writeArray;
-    cudaSurfaceObject_t surface;
-    cuda_createSurfaceObject(&surface, &dsc);
+  cudaResourceDesc dsc;
+  dsc.resType         = cudaResourceTypeArray;
+  dsc.res.array.array = writeArray;
+  cudaSurfaceObject_t surface;
+  cuda_createSurfaceObject( &surface, &dsc );
 
 #ifdef USE_CUDA_PROFILING
-    cuda_profilerStart();
-#endif
-    cuda_tracePath(surface,
-                   m_dScaleViewInvEye,
-                   m_dShapes,
-                   m_numShapes,
-                   m_dAreaLights,
-                   m_numAreaLights,
-                   dim3(width, height),
-                   m_dRandState,
-                   EMIT,
-                   DIRECT,
-                   INDIRECT,
-                   BOUNCE_LIMIT,
-                   scaleFactor);
-#ifdef USE_CUDA_PROFILING
-    cuda_profilerStop();
+  cuda_profilerStart( );
 #endif
 
-    cuda_destroySurfaceObject(surface);
-    cuda_graphicsUnmapResource(&res);
-    cuda_streamSynchronize(0);
-}
+  cuda_tracePath(
+                 surface,
+                 m_dScaleViewInvEye,
+                 m_dShapes,
+                 m_numShapes,
+                 m_dAreaLights,
+                 m_numAreaLights,
+                 dim3( width, height ),
+                 m_dRandState,
+                 EMIT,
+                 DIRECT,
+                 INDIRECT,
+                 BOUNCE_LIMIT,
+                 scaleFactor
+                 );
+
+#ifdef USE_CUDA_PROFILING
+  cuda_profilerStop( );
+#endif
+
+  cuda_destroySurfaceObject( surface );
+  cuda_graphicsUnmapResource( &res );
+  cuda_streamSynchronize( 0 );
+} // _tracePathCUDA
 
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
@@ -297,19 +313,19 @@ void PathTracer::init(int, const char**, GLuint, GLuint)
 }
 
 
-void PathTracer::register2DTexture(const char *name, GLuint tex)
+void PathTracer::register2DTexture(const std::string name, GLuint tex)
 {
     m_textures[name] = tex;
 }
 
 
-void PathTracer::unregisterTexture(const char *name)
+void PathTracer::unregisterTexture(const std::string name)
 {
     m_textures.count(name);
 }
 
 
-void PathTracer::swapResources(const char *res1, const char *res2)
+void PathTracer::swapResources(const std::string res1, const std::string res2)
 {
     GLuint temp = m_textures[res1];
     m_textures[res1] = m_textures[res2];
@@ -371,7 +387,7 @@ void PathTracer::setScaleViewInvEye(glm::vec4 eye, glm::mat4 scaleViewInv)
 }
 
 
-void PathTracer::tracePath(const char *writeTex, GLuint width, GLuint height, float scaleFactor)
+void PathTracer::tracePath(const std::string writeTex, GLuint width, GLuint height, float scaleFactor)
 {
     this->_tracePathCPU(writeTex, width, height, scaleFactor);
 }
@@ -380,7 +396,7 @@ void PathTracer::tracePath(const char *writeTex, GLuint width, GLuint height, fl
 void *asyncPathTrace(void *args);
 
 
-void PathTracer::_tracePathCPU(const char *writeTex, GLuint width, GLuint height, float scaleFactor)
+void PathTracer::_tracePathCPU(const std::string writeTex, GLuint width, GLuint height, float scaleFactor)
 {
     GLsizei widthi = static_cast<GLsizei>(width);
     GLsizei heighti = static_cast<GLsizei>(height);
@@ -420,6 +436,8 @@ void PathTracer::_tracePathCPU(const char *writeTex, GLuint width, GLuint height
 
 #endif
 
+
+} // namespace rndr
 
 
 

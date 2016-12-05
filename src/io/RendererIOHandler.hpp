@@ -2,7 +2,17 @@
 #define RendererIOHandler_hpp
 
 
+#include <string>
 #include "io/OpenGLIOHandler.hpp"
+
+
+namespace graphics
+{
+
+class OpenGLWrapper;
+class Camera;
+
+}
 
 
 namespace shared
@@ -42,17 +52,53 @@ public:
   ~RendererIOHandler( );
 
 
+  void rotateCamera (
+                     double deltaX,
+                     double deltaY
+                     );
+
+
+  void zoomCamera ( double deltaZ );
+
+
+  void resetBlendTexture ( );
+
+  void resize( int w, int h );
+
 
 protected:
-
 
 private:
 
   virtual
-  void onRender( const double alpha ) final;
+  void onRender ( const double alpha ) final;
 
+
+  void _render (
+                const std::string program,
+                const std::string mainTex,
+                const float       alpha,
+                const bool        useTexSize  = false,
+                const std::string blendTex    = ""
+                );
+
+
+  void _buildScene ( );
+
+
+
+  graphics::OpenGLWrapper *upGLWrapper_;
+//  std::unique_ptr< graphics::OpenGLWrapper > upGLWrapper_;
+  graphics::Camera *upCamera_;
+//  std::unique_ptr< graphics::Camera > upCamera_;
   PathTracer *upPathTracer_;
 //  std::unique_ptr< PathTracer > upPathTracer_;
+
+
+  int texWidth_;
+  int texHeight_;
+
+  int iterationsWithoutClear_;
 
 
 };
