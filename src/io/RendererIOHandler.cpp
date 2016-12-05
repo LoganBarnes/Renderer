@@ -169,9 +169,9 @@ RendererIOHandler::~RendererIOHandler( )
 
   upPathTracer_->unregisterTexture( "currTex" );
 
-  delete upGLWrapper_;
-  delete upCamera_;
-  delete upPathTracer_;
+//  delete upGLWrapper_;
+//  delete upCamera_;
+//  delete upPathTracer_;
 }
 
 

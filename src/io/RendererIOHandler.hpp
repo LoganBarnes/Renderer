@@ -87,12 +87,13 @@ private:
 
 
 
-  graphics::OpenGLWrapper *upGLWrapper_;
-//  std::unique_ptr< graphics::OpenGLWrapper > upGLWrapper_;
-  graphics::Camera *upCamera_;
-//  std::unique_ptr< graphics::Camera > upCamera_;
-  PathTracer *upPathTracer_;
-//  std::unique_ptr< PathTracer > upPathTracer_;
+  std::unique_ptr< graphics::OpenGLWrapper > upGLWrapper_;
+  std::unique_ptr< graphics::Camera > upCamera_;
+  std::unique_ptr< PathTracer > upPathTracer_;
+
+//  graphics::OpenGLWrapper *upGLWrapper_;
+//  graphics::Camera *upCamera_;
+//  PathTracer *upPathTracer_;
 
 
   int texWidth_;
