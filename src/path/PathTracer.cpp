@@ -5,8 +5,8 @@
 #include "RenderObjects.hpp"
 #include "PathTracer.hpp"
 
-const bool EMIT = true;
-const bool DIRECT = true;
+const bool EMIT     = true;
+const bool DIRECT   = true;
 const bool INDIRECT = true;
 
 const int BOUNCE_LIMIT = 5;

@@ -73,15 +73,14 @@ extern "C"
 
     // Remove the part that is parallel to Z
     X -= normal * dot( normal, X );
-    X /= length( X );   // normalize no?
-//        X = normalize(X);
+    X /= length( X );   // normalize
 
     Y = cross( normal, X );
 
-    return
-      rand.x * X
-      + rand.y * Y
-      + rand.z * Z;
+    return rand.x * X
+           + rand.y * Y
+           + rand.z * Z;
+
   } // randCosHemi
 
 
@@ -104,15 +103,15 @@ extern "C"
     SurfaceElement surfel;
 
     if ( shape.type == QUAD )
-    {/*
+    {
       float x = 1.f - curand_uniform( state + id );
       float y = 1.f - curand_uniform( state + id );
 
       x = x * 2.f - 1.f;
-      y = y * 2.f - 1.f;*/
+      y = y * 2.f - 1.f;
 
-            surfel.point = make_float3(shape.trans * make_float4(0.f, 0.f, 0.f, 1.f));
-//      surfel.point    = make_float3( shape.trans * make_float4( x, y, 0.f, 1.f ) );
+//      surfel.point = make_float3( shape.trans * make_float4( 0.f, 0.f, 0.f, 1.f ) );
+      surfel.point    = make_float3( shape.trans * make_float4( x, y, 0.f, 1.f ) );
       surfel.normal   = normalize( shape.normInv * make_float3( 0.f, 0.f, -1.f ) );
       surfel.material = shape.material;
       surfel.index    = static_cast< int >( shape.index );

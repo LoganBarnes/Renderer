@@ -147,26 +147,24 @@ extern "C"
       r.dir  = normalize( ( lightSurfel.point + lightSurfel.normal * BUMP_VAL ) - r.orig );
       SurfaceElement intersection;
 
-//      intersectWorld( &r, shapes, numShapes, &intersection, -1 );
-//      if ( intersectWorld( &r, shapes, numShapes, &intersection, -1 ) &&
-//          intersection.index == lightSurfel.index )
+      if ( intersectWorld( &r, shapes, numShapes, &intersection, -1 ) &&
+          intersection.index == lightSurfel.index )
       {
-//        float3 w_i            = lightSurfel.point - surfel->point;
-//        const float distance2 = dot( w_i, w_i );
-//        w_i /= sqrt( distance2 );
+        float3 w_i            = lightSurfel.point - surfel->point;
+        const float distance2 = dot( w_i, w_i );
+        w_i /= sqrt( distance2 );
 
-//        L_o += surfel->material.lambertianReflect           // should calc BSDF
-//               * ( lightSurfel.material.power / PI_F )
-//               * max( 0.f, dot( w_i, surfel->normal ) )
-//               * max( 0.f, dot( -w_i, lightSurfel.normal / distance2 ) );
+        L_o += surfel->material.lambertianReflect           // should calc BSDF
+               * ( lightSurfel.material.power / PI_F )
+               * max( 0.f, dot( w_i, surfel->normal ) )
+               * max( 0.f, dot( -w_i, lightSurfel.normal / distance2 ) );
       }
-      L_o += make_float3( 0, 1, 1 );
 
-
-      // TODO: implement impulses (specular)
+      // TODO: implement impulses
     }
 
     return L_o;
+
   } // estimateDirectLightFromAreaLights
 
 
@@ -210,7 +208,6 @@ extern "C"
       {
 
         L_o += *coeff * surfel.material.emitted;
-        L_o *= make_float3( 0.5, .5, 0.0 );
 
       }
 
@@ -228,16 +225,19 @@ extern "C"
                                                           );
       } // end DIRECT
 
-//      if ( !isEyeRay || debugIndirect )
-//      {
+      if ( !isEyeRay || debugIndirect )
+      {
 
-//        *coeff *= estimateIndirectLight( &surfel, ray, randState, id );
+        *coeff *= estimateIndirectLight( &surfel, ray, randState, id );
 
-//        if ( length( *coeff ) < 1.e-9f )
-//        {
-//          ray->isValid = false;
-//        }
-//      }
+        if ( length( *coeff ) < 1.e-9f )
+        {
+
+          ray->isValid = false;
+
+        }
+
+      }
 
       if ( !debugIndirect )
       {
@@ -349,14 +349,7 @@ extern "C"
         ++iteration;
       }
 
-//      float4 result = make_float4( radiance * scale, 1.f );
-
-//      // nans?
-//      result.x = result.x != result.x ? 0.f : result.x;
-//      result.y = result.y != result.y ? 0.f : result.y;
-//      result.z = result.z != result.z ? 0.f : result.z;
-
-      float4 result = make_float4( radiance, 0.0 );
+      float4 result = make_float4( radiance * scale, 1.f );
 
       // Write to output surface
       surf2Dwrite( result, surfObj, x * sizeof( float4 ), y );

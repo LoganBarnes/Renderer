@@ -20,12 +20,12 @@ namespace rndr
 namespace
 {
 
-constexpr int defaultWidth  = 1080;
-constexpr int defaultHeight = 720;
+constexpr int defaultWidth  = 512;
+constexpr int defaultHeight = 512;
 
-constexpr bool antialias = false;
+constexpr bool antialias = true;
 
-constexpr float lightScaling = 0.5f;
+constexpr float lightScaling = 1.0f;
 
 
 
@@ -285,15 +285,22 @@ RendererIOHandler::_render(
 
 {
 
+  glm::vec2 screenSize;
 
   if ( useTexSize )
   {
 
     upGLWrapper_->clearWindow( texWidth_, texHeight_ );
+    screenSize = glm::vec2( texWidth_, texHeight_ );
 
   }
   else
   {
+
+    screenSize = glm::vec2(
+                           upGLWrapper_->getViewportWidth( ),
+                           upGLWrapper_->getViewportHeight( )
+                           );
 
     upGLWrapper_->clearWindow( );
 
@@ -302,7 +309,6 @@ RendererIOHandler::_render(
   upGLWrapper_->useProgram( program );
   upGLWrapper_->setTextureUniform( program, "texture1", mainTex, 0 );
 
-  glm::vec2 screenSize( texWidth_, texHeight_ );
   upGLWrapper_->setFloatUniform( program, "texSize", glm::value_ptr( screenSize ), 2 );
 
   if ( blendTex.length( ) > 0 )
