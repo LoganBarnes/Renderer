@@ -96,8 +96,11 @@ set(
 
     ${SRC_DIR}/common
     ${SRC_DIR}/io
+    ${SRC_DIR}/kdTree
     ${SRC_DIR}/path
     ${SRC_DIR}/path/cuda
+    ${SRC_DIR}/shapes
+    ${SRC_DIR}/world
     )
 
 # cpp files
@@ -111,17 +114,29 @@ set(
 
     ${SHARED_SOURCE}
 
+    ${SRC_DIR}/common/RenderTypes.hpp
+    ${SRC_DIR}/common/RenderObjects.hpp
+
     ${SRC_DIR}/io/RendererIOHandler.hpp
     ${SRC_DIR}/io/RendererIOHandler.cpp
     ${SRC_DIR}/io/RendererCallback.hpp
     ${SRC_DIR}/io/RendererCallback.cpp
 
+    ${SRC_DIR}/kdTree/KDTree.hpp
+#    ${SRC_DIR}/kdTree/KDTree.cpp
+    ${SRC_DIR}/kdTree/KDNode.hpp
+#    ${SRC_DIR}/kdTree/KDNode.cpp
+    ${SRC_DIR}/kdTree/KDElement.hpp
+
     ${SRC_DIR}/path/PathTracer.hpp
     ${SRC_DIR}/path/PathTracer.cpp
 
-    ${SRC_DIR}/common/RenderTypes.hpp
-    ${SRC_DIR}/common/RenderObjects.hpp
+    ${SRC_DIR}/shapes/MinimalShapes.hpp
+    ${SRC_DIR}/shapes/AABB.hpp
+    ${SRC_DIR}/shapes/AABB.cpp
 
+    ${SRC_DIR}/world/SceneWorld.hpp
+    ${SRC_DIR}/world/SceneWorld.cpp
 
     )
 
