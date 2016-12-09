@@ -6,6 +6,7 @@
 
 
 #include "AABB.hpp"
+#include "KDRenderer.hpp"
 
 
 namespace kdtree
@@ -40,7 +41,7 @@ public:
   bool hasLeftChild ( );
   bool hasRightChild ( );
 
-  // void displayNode( KDRenderer *pRenderer );
+  void displayNode( KDRenderer *pRenderer );
 
 
 private:
@@ -119,27 +120,6 @@ KDNode< T >::setRightChild( KDNode< T > *pRight )
 
 
 
-template< typename T >
-bool
-KDNode< T >::hasLeftChild( )
-{
-
-  return pLeft_ != NULL;
-
-}
-
-
-
-template< typename T >
-bool
-KDNode< T >::hasRightChild( )
-{
-
-  return pRight_ != NULL;
-
-}
-
-
 
 template< typename T >
 KDNode< T >*
@@ -183,6 +163,38 @@ KDNode< T >::getElements( )
 
 }
 
+
+
+template< typename T >
+bool
+KDNode< T >::hasLeftChild( )
+{
+
+  return pLeft_ != NULL;
+
+}
+
+
+
+template< typename T >
+bool
+KDNode< T >::hasRightChild( )
+{
+
+  return pRight_ != NULL;
+
+}
+
+
+
+template< typename T >
+void
+KDNode< T >::displayNode( KDRenderer */*pRenderer*/ )
+{
+
+//  pRoot_->displayNode( pRenderer );
+
+}
 
 
 } // namespace kdtree

@@ -123,10 +123,10 @@ set(
     ${SRC_DIR}/io/RendererCallback.cpp
 
     ${SRC_DIR}/kdTree/KDTree.hpp
-#    ${SRC_DIR}/kdTree/KDTree.cpp
     ${SRC_DIR}/kdTree/KDNode.hpp
-#    ${SRC_DIR}/kdTree/KDNode.cpp
     ${SRC_DIR}/kdTree/KDElement.hpp
+    ${SRC_DIR}/kdTree/KDRenderer.hpp
+    ${SRC_DIR}/kdTree/KDRenderer.cpp
 
     ${SRC_DIR}/path/PathTracer.hpp
     ${SRC_DIR}/path/PathTracer.cpp

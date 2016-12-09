@@ -14,6 +14,8 @@ namespace kdtree
 template< typename T >
 class KDElement;
 
+class KDRenderer;
+
 
 template< typename T >
 class KDTree
@@ -30,7 +32,7 @@ public:
   ~KDTree( );
 
 
-//    void displayTree( KDRenderer< T > *pRenderer );
+  void displayTree( KDRenderer *pRenderer );
 
 
 private:
@@ -76,11 +78,21 @@ KDTree< T >::~KDTree( )
 }
 
 
+template< typename T >
+void
+KDTree< T >::displayTree( KDRenderer *pRenderer )
+{
+
+  pRoot_->displayNode( pRenderer );
+
+}
+
+
 
 template< typename T >
 void
 KDTree< T >::_buildTree(
-                        int /*depth*/,
+                        int                                   /*depth*/,
                         const std::vector< KDElement< T >* >& /*elements*/,
                         KDNode< T >*                          /*pNode*/
                         )
