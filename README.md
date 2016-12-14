@@ -3,7 +3,7 @@
 
 # Path Tracer
 
-*It traces paths.* ![Video](https://vimeo.com/195206087)
+*It traces paths.* [Video](https://vimeo.com/195206087)
 
 #### Walls and Balls
 
