@@ -1,7 +1,7 @@
 
 ![Balls](renderings/lambertsBalls/balls.png)
 
-# Path Tracer
+# Monte Carlo Path Tracer
 
 *It traces paths.* [Video](https://vimeo.com/195206087)
 
